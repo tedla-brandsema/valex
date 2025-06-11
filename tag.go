@@ -12,7 +12,6 @@ var (
 
 func init() {
 	tag = tagex.NewTag(tagKey)
-	tag.Verb = "validating"
 
 	// Int directives
 	tagex.RegisterDirective(&tag, &IntRangeValidator{})

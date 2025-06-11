@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/tedla-brandsema/tagex"
 	"io"
 	"net"
 	"net/mail"
@@ -42,11 +43,13 @@ func (v *IntRangeValidator) Name() string {
 	return "range"
 }
 
-func (v *IntRangeValidator) Handle(val int) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *IntRangeValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *IntRangeValidator) Handle(val int) (int, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type NonNegativeIntValidator struct{}
@@ -62,11 +65,13 @@ func (v *NonNegativeIntValidator) Name() string {
 	return "pos"
 }
 
-func (v *NonNegativeIntValidator) Handle(val int) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *NonNegativeIntValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *NonNegativeIntValidator) Handle(val int) (int, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type NonPositiveIntValidator struct{}
@@ -82,11 +87,13 @@ func (v *NonPositiveIntValidator) Name() string {
 	return "neg"
 }
 
-func (v *NonPositiveIntValidator) Handle(val int) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *NonPositiveIntValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *NonPositiveIntValidator) Handle(val int) (int, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type UrlValidator struct{}
@@ -103,11 +110,13 @@ func (v *UrlValidator) Name() string {
 	return "url"
 }
 
-func (v *UrlValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *UrlValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *UrlValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type EmailValidator struct{}
@@ -124,11 +133,13 @@ func (v *EmailValidator) Name() string {
 	return "email"
 }
 
-func (v *EmailValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *EmailValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *EmailValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type NonEmptyStringValidator struct{}
@@ -144,11 +155,13 @@ func (v *NonEmptyStringValidator) Name() string {
 	return "!empty"
 }
 
-func (v *NonEmptyStringValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *NonEmptyStringValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *NonEmptyStringValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type MinLengthValidator struct {
@@ -169,11 +182,13 @@ func (v *MinLengthValidator) Name() string {
 	return "min"
 }
 
-func (v *MinLengthValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *MinLengthValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *MinLengthValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type MaxLengthValidator struct {
@@ -194,11 +209,13 @@ func (v *MaxLengthValidator) Name() string {
 	return "max"
 }
 
-func (v *MaxLengthValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *MaxLengthValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *MaxLengthValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type LengthRangeValidator struct {
@@ -224,11 +241,13 @@ func (v *LengthRangeValidator) Name() string {
 	return "len"
 }
 
-func (v *LengthRangeValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *LengthRangeValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *LengthRangeValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type RegexValidator struct {
@@ -261,11 +280,13 @@ func (v *AlphaNumericValidator) Name() string {
 	return "alphanum"
 }
 
-func (v *AlphaNumericValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *AlphaNumericValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *AlphaNumericValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type MACAddressValidator struct{}
@@ -282,11 +303,13 @@ func (v *MACAddressValidator) Name() string {
 	return "mac"
 }
 
-func (v *MACAddressValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *MACAddressValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *MACAddressValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type IpValidator struct{}
@@ -302,11 +325,13 @@ func (v *IpValidator) Name() string {
 	return "ip"
 }
 
-func (v *IpValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *IpValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *IpValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type IPv4Validator struct{}
@@ -323,11 +348,13 @@ func (v *IPv4Validator) Name() string {
 	return "ipv4"
 }
 
-func (v *IPv4Validator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *IPv4Validator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *IPv4Validator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type IPv6Validator struct{}
@@ -344,11 +371,13 @@ func (v *IPv6Validator) Name() string {
 	return "ipv6"
 }
 
-func (v *IPv6Validator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *IPv6Validator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *IPv6Validator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type XMLValidator struct{}
@@ -382,11 +411,13 @@ func (v *XMLValidator) Name() string {
 	return "xml"
 }
 
-func (v *XMLValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *XMLValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *XMLValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type JSONValidator struct{}
@@ -402,11 +433,13 @@ func (v *JSONValidator) Name() string {
 	return "json"
 }
 
-func (v *JSONValidator) Handle(val string) error {
-	if ok, err := v.Validate(val); !ok {
-		return err
-	}
-	return nil
+func (v *JSONValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *JSONValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
+	return val, err
 }
 
 type CompositeValidator[T cmp.Ordered] struct {

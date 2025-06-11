@@ -14,7 +14,7 @@ func TestValidateStruct_int(t *testing.T) {
 	}{
 		{
 			name: "Valid int range and min length string",
-			data: struct {
+			data: &struct {
 				Age  int    `val:"range,min=0,max=120"`
 				Name string `val:"min,size=3"`
 			}{Age: 30, Name: "John"},
@@ -22,7 +22,7 @@ func TestValidateStruct_int(t *testing.T) {
 		},
 		{
 			name: "Invalid int range",
-			data: struct {
+			data: &struct {
 				Age int `val:"range,min=0,max=120"`
 			}{Age: -1},
 			wantValid: false,
@@ -30,7 +30,7 @@ func TestValidateStruct_int(t *testing.T) {
 		},
 		{
 			name: "Unknown directive id",
-			data: struct {
+			data: &struct {
 				Field int `val:"foobar"`
 			}{Field: 10},
 			wantValid: false,
@@ -62,34 +62,34 @@ func TestValidateStruct_string(t *testing.T) {
 	}{
 		{
 			name: "Invalid string min length",
-			data: struct {
+			data: &struct {
 				Name string `val:"min,size=3"`
 			}{Name: "Al"},
 			wantValid: false,
-			errSubstr: "error validating field \"Name\"",
+			errSubstr: "error processing field \"Name\"",
 		},
 		{
 			name: "Malformed parameter for string validator",
-			data: struct {
+			data: &struct {
 				Name string `val:"min,"`
 			}{Name: "Alice"},
 			wantValid: false,
-			errSubstr: "error validating field",
+			errSubstr: "error processing field",
 		},
 		{
 			name: "Valid length range for string",
-			data: struct {
+			data: &struct {
 				Code string `val:"len,min=3,max=5"`
 			}{Code: "abcd"},
 			wantValid: true,
 		},
 		{
 			name: "Invalid length range (too short)",
-			data: struct {
+			data: &struct {
 				Code string `val:"length,min=3,max=5"`
 			}{Code: "ab"},
 			wantValid: false,
-			errSubstr: "error validating field \"Code\"",
+			errSubstr: "error processing field \"Code\"",
 		},
 	}
 
