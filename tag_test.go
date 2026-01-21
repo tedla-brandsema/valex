@@ -66,7 +66,7 @@ func TestValidateStruct_string(t *testing.T) {
 				Name string `val:"min,size=3"`
 			}{Name: "Al"},
 			wantValid: false,
-			errSubstr: "error processing field \"Name\"",
+			errSubstr: "directive processing field \"Name\"",
 		},
 		{
 			name: "Malformed parameter for string validator",
@@ -74,7 +74,7 @@ func TestValidateStruct_string(t *testing.T) {
 				Name string `val:"min,"`
 			}{Name: "Alice"},
 			wantValid: false,
-			errSubstr: "error processing field",
+			errSubstr: "parameter processing field \"Name\"",
 		},
 		{
 			name: "Valid length range for string",
@@ -89,7 +89,7 @@ func TestValidateStruct_string(t *testing.T) {
 				Code string `val:"length,min=3,max=5"`
 			}{Code: "ab"},
 			wantValid: false,
-			errSubstr: "error processing field \"Code\"",
+			errSubstr: "unknown directive \"length\"",
 		},
 		{
 			name: "Valid regex match",

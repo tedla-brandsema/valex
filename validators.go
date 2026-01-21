@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/mail"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -251,8 +252,7 @@ func (v *LengthRangeValidator) Handle(val string) (string, error) {
 }
 
 type RegexValidator struct {
-	ParamPattern string `param:"pattern"`
-	Pattern      *regexp.Regexp
+	Pattern *regexp.Regexp `param:"pattern"`
 }
 
 func (v *RegexValidator) Validate(val string) (ok bool, err error) {
@@ -273,13 +273,20 @@ func (v *RegexValidator) Mode() tagex.DirectiveMode {
 	return tagex.EvalMode
 }
 
-func (v *RegexValidator) Handle(val string) (string, error) {
-	r, err := regexp.Compile(v.ParamPattern)
-	if err != nil {
-		return "", fmt.Errorf("invalid regex pattern %q: %v", v.ParamPattern, err)
+func (v *RegexValidator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
+	if fieldValue.Type() != reflect.TypeOf((*regexp.Regexp)(nil)) {
+		return tagex.NewConversionError(field, raw, "*regexp.Regexp")
 	}
-	v.Pattern = r
-	_, err = v.Validate(val)
+	r, err := regexp.Compile(raw)
+	if err != nil {
+		return fmt.Errorf("invalid regex pattern %q: %v", raw, err)
+	}
+	fieldValue.Set(reflect.ValueOf(r))
+	return nil
+}
+
+func (v *RegexValidator) Handle(val string) (string, error) {
+	_, err := v.Validate(val)
 	return val, err
 }
 
