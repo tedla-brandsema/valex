@@ -91,6 +91,29 @@ func TestValidateStruct_string(t *testing.T) {
 			wantValid: false,
 			errSubstr: "error processing field \"Code\"",
 		},
+		{
+			name: "Valid regex match",
+			data: &struct {
+				Code string `val:"regex,pattern=^\\d+$"`
+			}{Code: "12345"},
+			wantValid: true,
+		},
+		{
+			name: "Invalid regex match",
+			data: &struct {
+				Code string `val:"regex,pattern=^\\d+$"`
+			}{Code: "abc"},
+			wantValid: false,
+			errSubstr: "does not match pattern",
+		},
+		{
+			name: "Invalid regex pattern",
+			data: &struct {
+				Code string `val:"regex,pattern=["`
+			}{Code: "123"},
+			wantValid: false,
+			errSubstr: "invalid regex pattern",
+		},
 	}
 
 	for _, tc := range tests {

@@ -25,6 +25,7 @@ func init() {
 	tagex.RegisterDirective(&tag, &MinLengthValidator{})
 	tagex.RegisterDirective(&tag, &MaxLengthValidator{})
 	tagex.RegisterDirective(&tag, &LengthRangeValidator{})
+	tagex.RegisterDirective(&tag, &RegexValidator{})
 	tagex.RegisterDirective(&tag, &AlphaNumericValidator{})
 	tagex.RegisterDirective(&tag, &MACAddressValidator{})
 	tagex.RegisterDirective(&tag, &IpValidator{})

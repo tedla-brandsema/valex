@@ -251,17 +251,37 @@ func (v *LengthRangeValidator) Handle(val string) (string, error) {
 }
 
 type RegexValidator struct {
-	Pattern *regexp.Regexp
+	ParamPattern string `param:"pattern"`
+	Pattern      *regexp.Regexp
 }
 
 func (v *RegexValidator) Validate(val string) (ok bool, err error) {
+	if v.Pattern == nil {
+		return false, errors.New("regex pattern not set")
+	}
 	if !v.Pattern.MatchString(val) {
 		return false, fmt.Errorf("value %q does not match pattern %q", val, v.Pattern.String())
 	}
 	return true, nil
 }
 
-// TODO: implement Directive for RegexValidator
+func (v *RegexValidator) Name() string {
+	return "regex"
+}
+
+func (v *RegexValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (v *RegexValidator) Handle(val string) (string, error) {
+	r, err := regexp.Compile(v.ParamPattern)
+	if err != nil {
+		return "", fmt.Errorf("invalid regex pattern %q: %v", v.ParamPattern, err)
+	}
+	v.Pattern = r
+	_, err = v.Validate(val)
+	return val, err
+}
 
 type AlphaNumericValidator struct{}
 
