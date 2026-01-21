@@ -1,8 +1,12 @@
 package valex
 
 import (
+	"fmt"
 	"regexp"
+	"strings"
 	"testing"
+
+	"github.com/tedla-brandsema/tagex"
 )
 
 func TestIntRangeValidator(t *testing.T) {
@@ -191,6 +195,119 @@ func TestRegexValidator(t *testing.T) {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
+}
+
+type evenDirectiveTest struct{}
+
+func (d *evenDirectiveTest) Name() string {
+	return "even"
+}
+
+func (d *evenDirectiveTest) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+func (d *evenDirectiveTest) Handle(val int) (int, error) {
+	if val%2 != 0 {
+		return val, fmt.Errorf("value %d is not even", val)
+	}
+	return val, nil
+}
+
+func TestRegisterDirective(t *testing.T) {
+	RegisterDirective(&evenDirectiveTest{})
+
+	tests := []struct {
+		name      string
+		data      interface{}
+		wantValid bool
+		errSubstr string
+	}{
+		{
+			name: "Valid even value",
+			data: &struct {
+				Count int `val:"even"`
+			}{Count: 4},
+			wantValid: true,
+		},
+		{
+			name: "Invalid odd value",
+			data: &struct {
+				Count int `val:"even"`
+			}{Count: 3},
+			wantValid: false,
+			errSubstr: "not even",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ok, err := ValidateStruct(tt.data)
+			if ok != tt.wantValid {
+				t.Fatalf("expected ok=%v, got ok=%v (err: %v)", tt.wantValid, ok, err)
+			}
+			if !tt.wantValid && err != nil && tt.errSubstr != "" {
+				if !strings.Contains(err.Error(), tt.errSubstr) {
+					t.Fatalf("expected error to contain %q, got %q", tt.errSubstr, err.Error())
+				}
+			}
+		})
+	}
+}
+
+func TestValidatedValue(t *testing.T) {
+	t.Run("set and get success", func(t *testing.T) {
+		v := &NonNegativeIntValidator{}
+		val := &ValidatedValue[int]{Validator: v}
+		if err := val.Set(10); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if got := val.Get(); got != 10 {
+			t.Fatalf("expected value=10, got %d", got)
+		}
+		if got := val.String(); got != "10" {
+			t.Fatalf("expected String()=10, got %q", got)
+		}
+	})
+
+	t.Run("set with nil validator", func(t *testing.T) {
+		val := &ValidatedValue[int]{}
+		if err := val.Set(1); err == nil {
+			t.Fatal("expected error, got nil")
+		}
+	})
+
+	t.Run("set with invalid value", func(t *testing.T) {
+		v := &NonPositiveIntValidator{}
+		val := &ValidatedValue[int]{Validator: v}
+		err := val.Set(1)
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if !strings.Contains(err.Error(), "positive integer") {
+			t.Fatalf("expected error to mention positive integer, got %q", err.Error())
+		}
+	})
+}
+
+func TestMustValidate(t *testing.T) {
+	t.Run("returns value on success", func(t *testing.T) {
+		v := &NonNegativeIntValidator{}
+		got := MustValidate(5, v)
+		if got != 5 {
+			t.Fatalf("expected 5, got %d", got)
+		}
+	})
+
+	t.Run("panics on failure", func(t *testing.T) {
+		v := &NonNegativeIntValidator{}
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatal("expected panic, got nil")
+			}
+		}()
+		_ = MustValidate(-1, v)
+	})
 }
 
 func TestAlphaNumericValidator(t *testing.T) {

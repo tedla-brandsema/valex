@@ -8,6 +8,8 @@ Features
 * **Generic Validators:** Define validators for any ordered type (e.g. integers, floats, strings).
 * **Validator Interface & Adapter:** Implement your own validation logic via the `Validator[T]` interface or create quick validators using the `ValidatorFunc[T]` adapter.
 * **Validated Value Wrapper:** Use the `ValidatedValue[T]` type to ensure that only valid values (as determined by your validator) are set.
+* **Tag-Based Validation:** Use struct tags with built-in directives via `ValidateStruct`.
+* **Custom Directives:** Register your own tag directives with `RegisterDirective`.
 
 ## Installation
 
@@ -31,31 +33,30 @@ import (
 	"github.com/tedla-brandsema/valex"
 )
 
-type IntRangeValidator struct{
+type IntRangeValidator struct {
 	Min int
 	Max int
 }
 
 func (v IntRangeValidator) Validate(val int) (bool, error) {
 	if val < v.Min || val > v.Max {
-		return false, fmt.Errorf("value %d is out of range [%d, %d]", v.Min, v.Max, val)
+		return false, fmt.Errorf("value %d is out of range [%d, %d]", val, v.Min, v.Max)
 	}
 	return true, nil
 }
 
 func main() {
 	// Create a Validator
-	v = IntRangeValidator{
+	v := IntRangeValidator{
 		Min: 1,
 		Max: 10,
-	},
+	}
 
 	if ok, err := v.Validate(11); !ok {
 		fmt.Println("Error:", err)
 	}
 
-
-	// Or use a Validator in nonjunction with a ValidatedValue
+	// Or use a Validator in conjunction with a ValidatedValue
 	vv := valex.ValidatedValue[int]{
 		Validator: v,
 	}
@@ -103,6 +104,70 @@ func main() {
 }
 ```
 
+### Tag-Based Validation
+
+You can validate struct fields by using the `val` tag and calling `ValidateStruct`:
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/tedla-brandsema/valex"
+)
+
+type User struct {
+	Name  string `val:"min,size=3"`
+	Email string `val:"email"`
+	Age   int    `val:"range,min=0,max=120"`
+}
+
+func main() {
+	user := &User{Name: "Al", Email: "invalid", Age: 200}
+	ok, err := valex.ValidateStruct(user)
+	fmt.Println(ok, err)
+}
+```
+
+### Registering Custom Directives
+
+Register your own directives to extend the `val` tag:
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/tedla-brandsema/valex"
+	"github.com/tedla-brandsema/tagex"
+)
+
+type EvenDirective struct{}
+
+func (d *EvenDirective) Name() string { return "even" }
+func (d *EvenDirective) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+func (d *EvenDirective) Handle(val int) (int, error) {
+	if val%2 != 0 {
+		return 0, fmt.Errorf("value %d is not even", val)
+	}
+	return val, nil
+}
+
+func main() {
+	valex.RegisterDirective(&EvenDirective{})
+
+	type Item struct {
+		Count int `val:"even"`
+	}
+
+	item := &Item{Count: 3}
+	ok, err := valex.ValidateStruct(item)
+	fmt.Println(ok, err)
+}
+```
+
 ### How It Works
 
 * **Validator Interface:**\
@@ -117,7 +182,7 @@ func main() {
 ## Contributing
 
 Contributions, issues, and feature requests are welcome! Please check the issues page if you’d like to contribute.
-License
+
+## License
 
 This project is licensed under the MIT License – see the [LICENSE](https://github.com/tedla-brandsema/valex/blob/main/LICENSE) file for details.
-

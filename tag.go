@@ -38,3 +38,8 @@ func init() {
 func ValidateStruct(data interface{}) (bool, error) {
 	return tag.ProcessStruct(data)
 }
+
+func RegisterDirective[T any](d tagex.Directive[T]) {
+	// Do not add mutex here; it is handled in tagex
+	tagex.RegisterDirective(&tag, d)
+}

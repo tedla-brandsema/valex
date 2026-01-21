@@ -174,7 +174,7 @@ func (v *MinLengthValidator) Validate(val string) (ok bool, err error) {
 		return false, errors.New(`value of parameter "size" cannot be 0`)
 	}
 	if len(val) < v.Size {
-		return false, fmt.Errorf("value %s exeeds minimum length %d", val, v.Size)
+		return false, fmt.Errorf("value %s exceeds minimum length %d", val, v.Size)
 	}
 	return true, nil
 }
@@ -201,7 +201,7 @@ func (v *MaxLengthValidator) Validate(val string) (ok bool, err error) {
 		return false, errors.New(`value of parameter "size" cannot be 0`)
 	}
 	if len(val) > v.Size {
-		return false, fmt.Errorf("value %s exeeds maximum length %d", val, v.Size)
+		return false, fmt.Errorf("value %s exceeds maximum length %d", val, v.Size)
 	}
 	return true, nil
 }
@@ -422,7 +422,7 @@ func (v *XMLValidator) Validate(val string) (ok bool, err error) {
 			return false, fmt.Errorf("XML parsing error: %w", err)
 		}
 
-		if _, ok := tok.(xml.StartElement); ok { // atleast one tag
+		if _, ok := tok.(xml.StartElement); ok { // at least one tag
 			hasElement = true
 		}
 	}
