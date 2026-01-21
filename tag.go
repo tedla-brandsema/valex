@@ -35,10 +35,12 @@ func init() {
 	tagex.RegisterDirective(&tag, &JSONValidator{})
 }
 
+// ValidateStruct validates struct fields using the "val" tag directives.
 func ValidateStruct(data interface{}) (bool, error) {
 	return tag.ProcessStruct(data)
 }
 
+// RegisterDirective registers a directive for use with the "val" struct tag.
 func RegisterDirective[T any](d tagex.Directive[T]) {
 	// Do not add mutex here; it is handled in tagex
 	tagex.RegisterDirective(&tag, d)
