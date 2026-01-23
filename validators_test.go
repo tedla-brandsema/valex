@@ -397,8 +397,26 @@ func TestUUIDValidator(t *testing.T) {
 		input string
 		ok    bool
 	}{
-		{"550e8400-e29b-41d4-a716-446655440000", true},
+		{"550e8400-e29b-41d4-a716-446655440000", true}, // v4
+		{"6ba7b810-9dad-11d1-80b4-00c04fd430c8", false}, // v1 default expects v4
 		{"550e8400e29b41d4a716446655440000", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestUUIDValidatorVersion(t *testing.T) {
+	v := &UUIDValidator{Version: 1}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"6ba7b810-9dad-11d1-80b4-00c04fd430c8", true},  // v1
+		{"550e8400-e29b-41d4-a716-446655440000", false}, // v4
 	}
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)

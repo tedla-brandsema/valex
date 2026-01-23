@@ -909,16 +909,36 @@ func (v *ContainsValidator) Handle(val string) (string, error) {
 }
 
 // UUIDValidator validates that a string is a RFC 4122 UUID.
-type UUIDValidator struct{}
+// If Version is 0, version 4 is assumed.
+type UUIDValidator struct {
+	Version int `param:"version,required=false"`
+}
 
 // Validate checks whether the value is a UUID.
 func (v *UUIDValidator) Validate(val string) (ok bool, err error) {
-	matched, err := regexp.MatchString(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`, val)
-	if err != nil {
-		return false, err
-	}
-	if !matched {
+	re := regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-([0-9a-fA-F])[0-9a-fA-F]{3}-([0-9a-fA-F])[0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
+	matches := re.FindStringSubmatch(val)
+	if matches == nil {
 		return false, fmt.Errorf("value %q is not a valid UUID", val)
+	}
+	versionChar := strings.ToLower(matches[1])
+	variantChar := strings.ToLower(matches[2])
+	version, err := strconv.ParseInt(versionChar, 16, 0)
+	if err != nil {
+		return false, fmt.Errorf("invalid UUID version %q", versionChar)
+	}
+	if variantChar != "8" && variantChar != "9" && variantChar != "a" && variantChar != "b" {
+		return false, fmt.Errorf("value %q is not a valid UUID variant", val)
+	}
+	expected := v.Version
+	if expected == 0 {
+		expected = 4
+	}
+	if expected < 1 || expected > 8 {
+		return false, fmt.Errorf("invalid UUID version %d", expected)
+	}
+	if int(version) != expected {
+		return false, fmt.Errorf("value %q is not a UUIDv%d", val, expected)
 	}
 	return true, nil
 }
@@ -931,6 +951,23 @@ func (v *UUIDValidator) Name() string {
 // Mode returns the directive evaluation mode.
 func (v *UUIDValidator) Mode() tagex.DirectiveMode {
 	return tagex.EvalMode
+}
+
+// ConvertParam parses the version parameter.
+func (v *UUIDValidator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
+	if fieldValue.Kind() != reflect.Int {
+		return tagex.NewConversionError(field, raw, "int")
+	}
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return fmt.Errorf("version cannot be empty")
+	}
+	ver, err := strconv.Atoi(raw)
+	if err != nil {
+		return fmt.Errorf("invalid UUID version %q", raw)
+	}
+	fieldValue.SetInt(int64(ver))
+	return nil
 }
 
 // Handle validates the value and returns it unchanged.

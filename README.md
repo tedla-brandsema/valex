@@ -226,7 +226,7 @@ directly.
 | `IPv6Validator` | `string` | `ipv6` | - | Valid IPv6 address. |
 | `HostnameValidator` | `string` | `hostname` | - | Valid hostname. |
 | `IPCIDRValidator` | `string` | `cidr` | - | Valid CIDR notation. |
-| `UUIDValidator` | `string` | `uuid` | - | RFC 4122 UUID. |
+| `UUIDValidator` | `string` | `uuid` | `version` (`4`) | RFC 4122 UUID with optional version. |
 | `Base64Validator` | `string` | `base64` | - | Valid base64 (standard or raw). |
 | `HexValidator` | `string` | `hex` | - | Valid hex string (optional `0x`). |
 | `XMLValidator` | `string` | `xml` | - | Well-formed XML with at least one element. |
