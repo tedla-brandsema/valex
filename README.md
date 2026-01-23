@@ -106,7 +106,8 @@ func main() {
 
 ### Tag-Based Validation
 
-You can validate struct fields by using the `val` tag and calling `ValidateStruct`:
+You can validate struct fields by using the `val` tag and calling `ValidateStruct`.
+Optionally pass additional `tagex.Tag` values to process multiple tags in one pass:
 
 ```go
 package main
@@ -114,6 +115,7 @@ package main
 import (
 	"fmt"
 	"github.com/tedla-brandsema/valex"
+	"github.com/tedla-brandsema/tagex"
 )
 
 type User struct {
@@ -124,7 +126,8 @@ type User struct {
 
 func main() {
 	user := &User{Name: "Al", Email: "invalid", Age: 200}
-	ok, err := valex.ValidateStruct(user)
+	tag := tagex.NewTag("extra")
+	ok, err := valex.ValidateStruct(user, &tag)
 	fmt.Println(ok, err)
 }
 ```
