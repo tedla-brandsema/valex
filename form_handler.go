@@ -44,6 +44,9 @@ func FormStatus(err error) int {
 	if errors.As(err, &tagErr) {
 		return http.StatusUnprocessableEntity
 	}
+	if errors.Is(err, ErrFieldRequired) {
+		return http.StatusUnprocessableEntity
+	}
 	return http.StatusBadRequest
 }
 

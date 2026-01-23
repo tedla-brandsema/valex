@@ -372,6 +372,42 @@ func TestFormValidatorUnsupportedKind(t *testing.T) {
 	}
 }
 
+func TestBindFormValues(t *testing.T) {
+	type Input struct {
+		Name string `field:"name"`
+		Age  int    `field:"age"`
+	}
+
+	values := url.Values{}
+	values.Set("name", "Alice")
+	values.Set("age", "29")
+
+	var input Input
+	if err := BindFormValues(&input, values); err != nil {
+		t.Fatalf("BindFormValues error: %v", err)
+	}
+	if input.Name != "Alice" || input.Age != 29 {
+		t.Fatalf("unexpected bound values: %+v", input)
+	}
+}
+
+func TestValidateFormSuccess(t *testing.T) {
+	type Input struct {
+		Name string `field:"name" val:"min,size=3"`
+	}
+
+	values := url.Values{}
+	values.Set("name", "Alice")
+	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	var input Input
+	ok, err := ValidateForm(req, &input)
+	if !ok || err != nil {
+		t.Fatalf("expected success, got ok=%v err=%v", ok, err)
+	}
+}
+
 func TestValidateFormStatusBadRequest(t *testing.T) {
 	type Input struct {
 		Tags []string `field:"tags, max=zero"`
@@ -396,6 +432,28 @@ func TestValidateFormStatusBadRequest(t *testing.T) {
 	}
 }
 
+func TestValidateFormStatusMissingRequired(t *testing.T) {
+	type Input struct {
+		Name string `field:"name, required=true"`
+	}
+
+	req := httptest.NewRequest("POST", "/submit", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	var input Input
+	ok, err := ValidateForm(req, &input)
+	if ok || err == nil {
+		t.Fatalf("expected validation error, got ok=%v err=%v", ok, err)
+	}
+	var formErr *FormError
+	if !errors.As(err, &formErr) {
+		t.Fatalf("expected FormError, got %v", err)
+	}
+	if formErr.StatusCode() != http.StatusUnprocessableEntity {
+		t.Fatalf("expected status %d, got %d", http.StatusUnprocessableEntity, formErr.StatusCode())
+	}
+}
+
 func TestValidateFormStatusUnprocessable(t *testing.T) {
 	type Input struct {
 		Name string `field:"name" val:"min,size=3"`
@@ -417,5 +475,27 @@ func TestValidateFormStatusUnprocessable(t *testing.T) {
 	}
 	if formErr.StatusCode() != http.StatusUnprocessableEntity {
 		t.Fatalf("expected status %d, got %d", http.StatusUnprocessableEntity, formErr.StatusCode())
+	}
+}
+
+func TestValidateFormParseError(t *testing.T) {
+	type Input struct {
+		Name string `field:"name"`
+	}
+
+	req := httptest.NewRequest("POST", "/submit", strings.NewReader("name=%zz"))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	var input Input
+	ok, err := ValidateForm(req, &input)
+	if ok || err == nil {
+		t.Fatalf("expected parse error, got ok=%v err=%v", ok, err)
+	}
+	var formErr *FormError
+	if !errors.As(err, &formErr) {
+		t.Fatalf("expected FormError, got %v", err)
+	}
+	if formErr.StatusCode() != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, formErr.StatusCode())
 	}
 }

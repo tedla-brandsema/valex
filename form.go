@@ -12,7 +12,7 @@ import (
 	"github.com/tedla-brandsema/tagex"
 )
 
-type FieldDirective struct {
+type fieldDirective struct {
 	Key          string `param:"key,required=false"`
 	Max          int    `param:"max,default=1"`
 	Required     bool   `param:"required,required=false"`
@@ -84,7 +84,7 @@ func bindStructFields(val reflect.Value, values url.Values, path string) error {
 			if err != nil {
 				return wrapFormFieldError(path, field.Name, err)
 			}
-			var directive FieldDirective
+			var directive fieldDirective
 			if err := tagex.ProcessParams(&directive, args); err != nil {
 				return wrapFormFieldError(path, field.Name, err)
 			}
@@ -139,7 +139,7 @@ func bindStructFields(val reflect.Value, values url.Values, path string) error {
 	return nil
 }
 
-func applyDefaultOrRequired(fieldValue reflect.Value, directive FieldDirective, path, fieldName string) error {
+func applyDefaultOrRequired(fieldValue reflect.Value, directive fieldDirective, path, fieldName string) error {
 	if directive.Required {
 		return wrapFormFieldError(path, fieldName, ErrFieldRequired)
 	}

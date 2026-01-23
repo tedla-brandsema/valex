@@ -174,6 +174,11 @@ func main() {
 URL query parameters. That means you can use `FormValidator` with GET requests
 as well as standard form submissions.
 
+For convenience, `ValidateForm` wraps request parsing and validation and returns
+a `FormError` with an HTTP status code you can use for responses. If you only
+need binding (outside of HTTP handlers), `BindFormValues` accepts `url.Values`
+directly.
+
 ### How It Works
 
 * **Validator Interface:**\
