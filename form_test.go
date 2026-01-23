@@ -1,10 +1,13 @@
 package valex
 
 import (
+	"errors"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/tedla-brandsema/tagex"
 )
 
 func TestFormValidatorBindAndValidate(t *testing.T) {
@@ -260,8 +263,9 @@ func TestFormValidatorMaxInvalid(t *testing.T) {
 	if ok || err == nil {
 		t.Fatalf("expected max error, got ok=%v err=%v", ok, err)
 	}
-	if !strings.Contains(err.Error(), "invalid max") {
-		t.Fatalf("unexpected error: %v", err)
+	var convErr *tagex.ConversionError
+	if !errors.As(err, &convErr) {
+		t.Fatalf("expected conversion error, got %v", err)
 	}
 }
 

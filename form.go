@@ -13,10 +13,10 @@ import (
 )
 
 type FieldDirective struct {
-	Key          string `param:"key"`
-	Max          int    `param:"max"`
-	Required     bool   `param:"required"`
-	DefaultValue string `param:"default"`
+	Key          string `param:"key,required=false"`
+	Max          int    `param:"max,default=1"`
+	Required     bool   `param:"required,required=false"`
+	DefaultValue string `param:"default,required=false"`
 }
 
 var ErrFieldRequired = errors.New("field is required")
@@ -84,26 +84,27 @@ func bindStructFields(val reflect.Value, values url.Values, path string) error {
 
 		fieldValue := val.FieldByName(field.Name)
 		if tagValue, ok := field.Tag.Lookup("field"); ok {
-			directive, args, err := splitFormTag(tagValue)
+			args, err := splitFormTag(tagValue)
 			if err != nil {
 				return wrapFormFieldError(path, field.Name, err)
 			}
-			if directive != "field" {
-				return wrapFormFieldError(path, field.Name, fmt.Errorf("unsupported form directive %q", directive))
+			var directive FieldDirective
+			if err := tagex.ProcessParams(&directive, args); err != nil {
+				return wrapFormFieldError(path, field.Name, err)
 			}
 
-			key := strings.TrimSpace(args["key"])
+			key := strings.TrimSpace(directive.Key)
 			if key == "" {
 				key = field.Name
 			}
 
 			raw, ok := values[key]
 			if !ok || len(raw) == 0 || raw[0] == "" {
-				if err := applyDefaultOrRequired(fieldValue, args, path, field.Name); err != nil {
+				if err := applyDefaultOrRequired(fieldValue, directive, path, field.Name); err != nil {
 					return err
 				}
 			} else {
-				if err := enforceMax(raw, args["max"]); err != nil {
+				if err := enforceMax(raw, directive.Max); err != nil {
 					return wrapFormFieldError(path, field.Name, err)
 				}
 				if err := setValueFromRaw(fieldValue, raw); err != nil {
@@ -142,30 +143,21 @@ func bindStructFields(val reflect.Value, values url.Values, path string) error {
 	return nil
 }
 
-func applyDefaultOrRequired(fieldValue reflect.Value, args map[string]string, path, fieldName string) error {
-	required, err := parseBoolParam(args["required"])
-	if err != nil {
-		return wrapFormFieldError(path, fieldName, err)
-	}
-	if required {
+func applyDefaultOrRequired(fieldValue reflect.Value, directive FieldDirective, path, fieldName string) error {
+	if directive.Required {
 		return wrapFormFieldError(path, fieldName, ErrFieldRequired)
 	}
-	if def, ok := args["default"]; ok && def != "" {
-		if err := setValueFromRaw(fieldValue, []string{def}); err != nil {
+	if strings.TrimSpace(directive.DefaultValue) != "" {
+		if err := setValueFromRaw(fieldValue, []string{directive.DefaultValue}); err != nil {
 			return wrapFormFieldError(path, fieldName, err)
 		}
 	}
 	return nil
 }
 
-func enforceMax(raw []string, maxRaw string) error {
-	max := 1
-	if strings.TrimSpace(maxRaw) != "" {
-		val, err := strconv.Atoi(strings.TrimSpace(maxRaw))
-		if err != nil || val <= 0 {
-			return fmt.Errorf("invalid max %q", maxRaw)
-		}
-		max = val
+func enforceMax(raw []string, max int) error {
+	if max <= 0 {
+		return fmt.Errorf("invalid max %d", max)
 	}
 	if len(raw) > max {
 		return fmt.Errorf("too many values (%d), max %d", len(raw), max)
@@ -173,22 +165,10 @@ func enforceMax(raw []string, maxRaw string) error {
 	return nil
 }
 
-func parseBoolParam(raw string) (bool, error) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" {
-		return false, nil
-	}
-	v, err := strconv.ParseBool(raw)
-	if err != nil {
-		return false, fmt.Errorf("invalid bool %q", raw)
-	}
-	return v, nil
-}
-
-func splitFormTag(tagVal string) (string, map[string]string, error) {
+func splitFormTag(tagVal string) (map[string]string, error) {
 	parts := strings.Split(tagVal, ",")
 	if len(parts) == 0 || strings.TrimSpace(parts[0]) == "" {
-		return "", nil, fmt.Errorf("field tag value is required")
+		return nil, fmt.Errorf("field tag value is required")
 	}
 
 	args := make(map[string]string)
@@ -200,16 +180,16 @@ func splitFormTag(tagVal string) (string, map[string]string, error) {
 		}
 		kv := strings.Split(pair, "=")
 		if len(kv) != 2 {
-			return "field", nil, fmt.Errorf("malformed key value pair %q, expected format is \"key=value\"", pair)
+			return nil, fmt.Errorf("malformed key value pair %q, expected format is \"key=value\"", pair)
 		}
 		key := strings.TrimSpace(kv[0])
 		val := strings.TrimSpace(kv[1])
 		if key == "" || val == "" {
-			return "field", nil, fmt.Errorf("malformed key value pair %q, expected format is \"key=value\"", pair)
+			return nil, fmt.Errorf("malformed key value pair %q, expected format is \"key=value\"", pair)
 		}
 		args[key] = val
 	}
-	return "field", args, nil
+	return args, nil
 }
 
 func setValueFromRaw(fieldValue reflect.Value, raw []string) error {
