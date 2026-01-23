@@ -2,6 +2,7 @@ package valex
 
 import (
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
@@ -368,5 +369,53 @@ func TestFormValidatorUnsupportedKind(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "unsupported field type") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestValidateFormStatusBadRequest(t *testing.T) {
+	type Input struct {
+		Tags []string `field:"tags, max=zero"`
+	}
+
+	values := url.Values{}
+	values.Add("tags", "a")
+	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	var input Input
+	ok, err := ValidateForm(req, &input)
+	if ok || err == nil {
+		t.Fatalf("expected validation error, got ok=%v err=%v", ok, err)
+	}
+	var formErr *FormError
+	if !errors.As(err, &formErr) {
+		t.Fatalf("expected FormError, got %v", err)
+	}
+	if formErr.StatusCode() != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, formErr.StatusCode())
+	}
+}
+
+func TestValidateFormStatusUnprocessable(t *testing.T) {
+	type Input struct {
+		Name string `field:"name" val:"min,size=3"`
+	}
+
+	values := url.Values{}
+	values.Set("name", "Al")
+	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	var input Input
+	ok, err := ValidateForm(req, &input)
+	if ok || err == nil {
+		t.Fatalf("expected validation error, got ok=%v err=%v", ok, err)
+	}
+	var formErr *FormError
+	if !errors.As(err, &formErr) {
+		t.Fatalf("expected FormError, got %v", err)
+	}
+	if formErr.StatusCode() != http.StatusUnprocessableEntity {
+		t.Fatalf("expected status %d, got %d", http.StatusUnprocessableEntity, formErr.StatusCode())
 	}
 }

@@ -168,6 +168,12 @@ func main() {
 }
 ```
 
+### Form Validation
+
+`NewFormValidator` calls `request.ParseForm()`, which parses both POST bodies and
+URL query parameters. That means you can use `FormValidator` with GET requests
+as well as standard form submissions.
+
 ### How It Works
 
 * **Validator Interface:**\

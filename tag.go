@@ -35,6 +35,9 @@ func init() {
 	tagex.RegisterDirective(&tag, &JSONValidator{})
 }
 
+// TODO: ValidatStruct should call tagex.ProcessStruct with the option of 
+// adding additonal tags, val tag will be added by default
+
 // ValidateStruct validates struct fields using the "val" tag directives.
 func ValidateStruct(data interface{}) (bool, error) {
 	return tag.ProcessStruct(data)

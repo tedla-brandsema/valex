@@ -26,6 +26,9 @@ type FormValidator struct {
 	rawValues url.Values
 }
 
+// NewFormValidator parses the request and prepares a validator.
+// ParseForm handles both POST bodies and URL query parameters, so GET requests
+// with query values are supported.
 func NewFormValidator(r *http.Request) (*FormValidator, error) {
 	if err := r.ParseForm(); err != nil {
 		return nil, err
@@ -39,6 +42,7 @@ func NewFormValidator(r *http.Request) (*FormValidator, error) {
 		nil
 }
 
+// Validate binds form values into dst and validates "val" tags.
 func (v *FormValidator) Validate(dst any) (bool, error) {
 	if err := bindFormValues(dst, v.rawValues); err != nil {
 		return false, err
@@ -52,6 +56,11 @@ func bindFormValues(dst any, values url.Values) error {
 		return err
 	}
 	return bindStructFields(val, values, "")
+}
+
+// BindFormValues binds url.Values into a struct pointer using "field" tags.
+func BindFormValues(dst any, values url.Values) error {
+	return bindFormValues(dst, values)
 }
 
 func pointerStruct(v any) (reflect.Value, error) {
