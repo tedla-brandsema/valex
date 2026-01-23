@@ -21,19 +21,6 @@ type FieldDirective struct {
 
 var ErrFieldRequired = errors.New("field is required")
 
-func (d *FieldDirective) Name() string {
-	return "field"
-}
-
-func (d *FieldDirective) Mode() tagex.DirectiveMode {
-	return tagex.MutMode
-}
-
-func (d *FieldDirective) Handle(val any) (any, error) {
-	// Binding enforces required/defaults; keep this as a no-op to avoid type mismatches.
-	return val, nil
-}
-
 type FormValidator struct {
 	tags      []*tagex.Tag
 	rawValues url.Values
