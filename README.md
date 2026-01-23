@@ -193,9 +193,47 @@ directly.
 	* `Set(val T) error`: Uses the validator to ensure that only valid values are stored.
 	* `Get() T`: Returns the current value.
 
-## Contributing
+## Built-in Validators
 
-Contributions, issues, and feature requests are welcome! Please check the issues page if you’d like to contribute.
+| Validator | Type | Tag | Params (defaults) | Description |
+| --- | --- | --- | --- | --- |
+| **Generic** |  |  |  |  |
+| `CmpRangeValidator[T]` | `cmp.Ordered` | - | `min`, `max` | Inclusive range for ordered types. |
+| **Ints** |  |  |  |  |
+| `IntRangeValidator` | `int` | `range` | `min`, `max` | Inclusive int range. |
+| `MinIntValidator` | `int` | `minint` | `min` | Int greater than or equal to `min`. |
+| `MaxIntValidator` | `int` | `maxint` | `max` | Int less than or equal to `max`. |
+| `NonNegativeIntValidator` | `int` | `pos` | - | Int is non-negative. |
+| `NonPositiveIntValidator` | `int` | `neg` | - | Int is non-positive. |
+| `NonZeroIntValidator` | `int` | `!zero` (alias: `nonzero`) | - | Int is not zero. |
+| `OneOfIntValidator` | `int` | `oneofint` | `values` | Int is in `values` (pipe-separated list). |
+| **Strings** |  |  |  |  |
+| `UrlValidator` | `string` | `url` | - | Valid URL (absolute). |
+| `EmailValidator` | `string` | `email` | - | Valid email address. |
+| `NonEmptyStringValidator` | `string` | `!empty` (alias: `nonempty`) | - | String is not empty. |
+| `MinLengthValidator` | `string` | `min` | `size` | String length >= `size`. |
+| `MaxLengthValidator` | `string` | `max` | `size` | String length <= `size`. |
+| `LengthRangeValidator` | `string` | `len` | `min`, `max` | String length in inclusive range. |
+| `RegexValidator` | `string` | `regex` | `pattern` | String matches regex. |
+| `PrefixValidator` | `string` | `prefix` | `value` | String has prefix. |
+| `SuffixValidator` | `string` | `suffix` | `value` | String has suffix. |
+| `ContainsValidator` | `string` | `contains` | `value` | String contains substring. |
+| `OneOfStringValidator` | `string` | `oneof` | `values` | String is in `values` (pipe-separated list). |
+| `AlphaNumericValidator` | `string` | `alphanum` | - | String is alphanumeric. |
+| `MACAddressValidator` | `string` | `mac` | - | Valid MAC address. |
+| `IpValidator` | `string` | `ip` | - | Valid IP address. |
+| `IPv4Validator` | `string` | `ipv4` | - | Valid IPv4 address. |
+| `IPv6Validator` | `string` | `ipv6` | - | Valid IPv6 address. |
+| `HostnameValidator` | `string` | `hostname` | - | Valid hostname. |
+| `IPCIDRValidator` | `string` | `cidr` | - | Valid CIDR notation. |
+| `UUIDValidator` | `string` | `uuid` | - | RFC 4122 UUID. |
+| `Base64Validator` | `string` | `base64` | - | Valid base64 (standard or raw). |
+| `HexValidator` | `string` | `hex` | - | Valid hex string (optional `0x`). |
+| `XMLValidator` | `string` | `xml` | - | Well-formed XML with at least one element. |
+| `JSONValidator` | `string` | `json` | - | Valid JSON. |
+| **Time** |  |  |  |  |
+| `TimeValidator` | `string` | `time` | `format` (`RFC3339`) | Valid time for layout (built-in names or raw layout). |
+| `NonZeroTimeValidator` | `time.Time` | `!zerotime` (alias: `nonzerotime`) | - | Time is not zero. |
 
 ## License
 

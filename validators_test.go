@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/tedla-brandsema/tagex"
 )
@@ -177,6 +178,41 @@ func TestLengthRangeValidator(t *testing.T) {
 	}
 }
 
+func TestLengthRangeValidatorBounds(t *testing.T) {
+	tests := []struct {
+		name string
+		v    *LengthRangeValidator
+	}{
+		{name: "min greater than max", v: &LengthRangeValidator{Min: 5, Max: 2}},
+		{name: "min negative", v: &LengthRangeValidator{Min: -1, Max: 2}},
+		{name: "max negative", v: &LengthRangeValidator{Min: 1, Max: -2}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ok, err := tc.v.Validate("abc")
+			if ok || err == nil {
+				t.Fatalf("expected bounds error, got ok=%v err=%v", ok, err)
+			}
+		})
+	}
+}
+
+func TestMinLengthValidatorNegative(t *testing.T) {
+	v := &MinLengthValidator{Size: -1}
+	ok, err := v.Validate("abc")
+	if ok || err == nil {
+		t.Fatalf("expected negative size error, got ok=%v err=%v", ok, err)
+	}
+}
+
+func TestMaxLengthValidatorNegative(t *testing.T) {
+	v := &MaxLengthValidator{Size: -1}
+	ok, err := v.Validate("abc")
+	if ok || err == nil {
+		t.Fatalf("expected negative size error, got ok=%v err=%v", ok, err)
+	}
+}
+
 func TestRegexValidator(t *testing.T) {
 	pattern := regexp.MustCompile(`^\d+$`)
 	v := &RegexValidator{Pattern: pattern}
@@ -188,6 +224,287 @@ func TestRegexValidator(t *testing.T) {
 		{"abc", false},
 		{"123abc", false},
 		{"", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestMinIntValidator(t *testing.T) {
+	v := &MinIntValidator{Min: 10}
+	tests := []struct {
+		input int
+		ok    bool
+	}{
+		{10, true},
+		{11, true},
+		{9, false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestMaxIntValidator(t *testing.T) {
+	v := &MaxIntValidator{Max: 10}
+	tests := []struct {
+		input int
+		ok    bool
+	}{
+		{10, true},
+		{9, true},
+		{11, false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestNonZeroIntValidator(t *testing.T) {
+	v := &NonZeroIntValidator{}
+	tests := []struct {
+		input int
+		ok    bool
+	}{
+		{0, false},
+		{1, true},
+		{-1, true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestNonZeroTimeValidator(t *testing.T) {
+	v := &NonZeroTimeValidator{}
+	tests := []struct {
+		input time.Time
+		ok    bool
+	}{
+		{time.Time{}, false},
+		{time.Now(), true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestOneOfStringValidator(t *testing.T) {
+	v := &OneOfStringValidator{Values: []string{"red", "green", "blue"}}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"red", true},
+		{"green", true},
+		{"yellow", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestOneOfIntValidator(t *testing.T) {
+	v := &OneOfIntValidator{Values: []int{1, 3, 5}}
+	tests := []struct {
+		input int
+		ok    bool
+	}{
+		{1, true},
+		{2, false},
+		{5, true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestPrefixValidator(t *testing.T) {
+	v := &PrefixValidator{Value: "pre"}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"prefix", true},
+		{"nopre", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestSuffixValidator(t *testing.T) {
+	v := &SuffixValidator{Value: "fix"}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"suffix", true},
+		{"fixes", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestContainsValidator(t *testing.T) {
+	v := &ContainsValidator{Value: "mid"}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"amidb", true},
+		{"nomatch", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestUUIDValidator(t *testing.T) {
+	v := &UUIDValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"550e8400-e29b-41d4-a716-446655440000", true},
+		{"550e8400e29b41d4a716446655440000", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestHostnameValidator(t *testing.T) {
+	v := &HostnameValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"example.com", true},
+		{"localhost", true},
+		{"http://example.com", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestIPCIDRValidator(t *testing.T) {
+	v := &IPCIDRValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"192.168.0.0/24", true},
+		{"2001:db8::/32", true},
+		{"invalid", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestBase64Validator(t *testing.T) {
+	v := &Base64Validator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"aGVsbG8=", true},
+		{"aGVsbG8", true},
+		{"not-base64", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestHexValidator(t *testing.T) {
+	v := &HexValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"deadbeef", true},
+		{"0xdeadbeef", true},
+		{"xyz", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestTimeValidator(t *testing.T) {
+	v := &TimeValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"2020-01-02T03:04:05Z", true},
+		{"2020-01-02", false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestTimeValidatorFormat(t *testing.T) {
+	v := &TimeValidator{Format: "2006-01-02"}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"2020-01-02", true},
+		{"2020-01-02T03:04:05Z", false},
 	}
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
