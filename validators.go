@@ -1,6 +1,7 @@
 package valex
 
 import (
+	"bytes"
 	"cmp"
 	"encoding/base64"
 	"encoding/hex"
@@ -922,6 +923,348 @@ func (v *NonZeroTimeAliasValidator) Name() string {
 	return "nonzerotime"
 }
 
+// TimeBeforeValidator validates that a time.Time is before the configured time.
+type TimeBeforeValidator struct {
+	Before time.Time `param:"before"`
+}
+
+// Validate checks whether the value is before the configured time.
+func (v *TimeBeforeValidator) Validate(val time.Time) (ok bool, err error) {
+	if v.Before.IsZero() {
+		return false, errors.New(`"before" time not set`)
+	}
+	if !val.Before(v.Before) {
+		return false, fmt.Errorf("time %v is not before %v", val, v.Before)
+	}
+	return true, nil
+}
+
+// Name returns the directive identifier.
+func (v *TimeBeforeValidator) Name() string {
+	return "beforetime"
+}
+
+// Mode returns the directive evaluation mode.
+func (v *TimeBeforeValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+// ConvertParam parses the before parameter.
+func (v *TimeBeforeValidator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
+	if fieldValue.Type() != reflect.TypeOf(time.Time{}) {
+		return tagex.NewConversionError(field, raw, "time.Time")
+	}
+	t, err := parseTimeParam(raw)
+	if err != nil {
+		return err
+	}
+	fieldValue.Set(reflect.ValueOf(t))
+	return nil
+}
+
+// Handle validates the value and returns it unchanged.
+func (v *TimeBeforeValidator) Handle(val time.Time) (time.Time, error) {
+	_, err := v.Validate(val)
+	return val, err
+}
+
+// TimeAfterValidator validates that a time.Time is after the configured time.
+type TimeAfterValidator struct {
+	After time.Time `param:"after"`
+}
+
+// Validate checks whether the value is after the configured time.
+func (v *TimeAfterValidator) Validate(val time.Time) (ok bool, err error) {
+	if v.After.IsZero() {
+		return false, errors.New(`"after" time not set`)
+	}
+	if !val.After(v.After) {
+		return false, fmt.Errorf("time %v is not after %v", val, v.After)
+	}
+	return true, nil
+}
+
+// Name returns the directive identifier.
+func (v *TimeAfterValidator) Name() string {
+	return "aftertime"
+}
+
+// Mode returns the directive evaluation mode.
+func (v *TimeAfterValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+// ConvertParam parses the after parameter.
+func (v *TimeAfterValidator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
+	if fieldValue.Type() != reflect.TypeOf(time.Time{}) {
+		return tagex.NewConversionError(field, raw, "time.Time")
+	}
+	t, err := parseTimeParam(raw)
+	if err != nil {
+		return err
+	}
+	fieldValue.Set(reflect.ValueOf(t))
+	return nil
+}
+
+// Handle validates the value and returns it unchanged.
+func (v *TimeAfterValidator) Handle(val time.Time) (time.Time, error) {
+	_, err := v.Validate(val)
+	return val, err
+}
+
+// TimeBetweenValidator validates that a time.Time is within an inclusive range.
+type TimeBetweenValidator struct {
+	Start time.Time `param:"start"`
+	End   time.Time `param:"end"`
+}
+
+// Validate checks whether the value is within the configured range.
+func (v *TimeBetweenValidator) Validate(val time.Time) (ok bool, err error) {
+	if v.Start.IsZero() || v.End.IsZero() {
+		return false, errors.New(`"start" and "end" times must be set`)
+	}
+	if v.Start.After(v.End) {
+		return false, errors.New(`"start" time cannot be after "end" time`)
+	}
+	if val.Before(v.Start) || val.After(v.End) {
+		return false, fmt.Errorf("time %v is not in range [%v, %v]", val, v.Start, v.End)
+	}
+	return true, nil
+}
+
+// Name returns the directive identifier.
+func (v *TimeBetweenValidator) Name() string {
+	return "betweentime"
+}
+
+// Mode returns the directive evaluation mode.
+func (v *TimeBetweenValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+// ConvertParam parses the start/end parameters.
+func (v *TimeBetweenValidator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
+	if fieldValue.Type() != reflect.TypeOf(time.Time{}) {
+		return tagex.NewConversionError(field, raw, "time.Time")
+	}
+	t, err := parseTimeParam(raw)
+	if err != nil {
+		return err
+	}
+	fieldValue.Set(reflect.ValueOf(t))
+	return nil
+}
+
+// Handle validates the value and returns it unchanged.
+func (v *TimeBetweenValidator) Handle(val time.Time) (time.Time, error) {
+	_, err := v.Validate(val)
+	return val, err
+}
+
+// PositiveDurationValidator validates that a time.Duration is positive.
+type PositiveDurationValidator struct{}
+
+// Validate checks whether the value is positive.
+func (v *PositiveDurationValidator) Validate(val time.Duration) (ok bool, err error) {
+	if val <= 0 {
+		return false, fmt.Errorf("duration is not positive")
+	}
+	return true, nil
+}
+
+// Name returns the directive identifier.
+func (v *PositiveDurationValidator) Name() string {
+	return "posduration"
+}
+
+// Mode returns the directive evaluation mode.
+func (v *PositiveDurationValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+// Handle validates the value and returns it unchanged.
+func (v *PositiveDurationValidator) Handle(val time.Duration) (time.Duration, error) {
+	_, err := v.Validate(val)
+	return val, err
+}
+
+// NonZeroDurationValidator validates that a time.Duration is not zero.
+type NonZeroDurationValidator struct{}
+
+// Validate checks whether the value is non-zero.
+func (v *NonZeroDurationValidator) Validate(val time.Duration) (ok bool, err error) {
+	if ok, err := validateNonZero(val); !ok {
+		return false, fmt.Errorf("duration is zero")
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// Name returns the directive identifier.
+func (v *NonZeroDurationValidator) Name() string {
+	return "!zeroduration"
+}
+
+// Mode returns the directive evaluation mode.
+func (v *NonZeroDurationValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+// Handle validates the value and returns it unchanged.
+func (v *NonZeroDurationValidator) Handle(val time.Duration) (time.Duration, error) {
+	_, err := v.Validate(val)
+	return val, err
+}
+
+// NonZeroDurationAliasValidator provides the "nonzeroduration" tag.
+type NonZeroDurationAliasValidator struct {
+	NonZeroDurationValidator
+}
+
+// Name returns the directive identifier.
+func (v *NonZeroDurationAliasValidator) Name() string {
+	return "nonzeroduration"
+}
+
+// NonZeroIPValidator validates that a net.IP is not zero or unspecified.
+type NonZeroIPValidator struct{}
+
+// Validate checks whether the value is non-zero.
+func (v *NonZeroIPValidator) Validate(val net.IP) (ok bool, err error) {
+	if len(val) == 0 || val.IsUnspecified() {
+		return false, fmt.Errorf("ip is zero")
+	}
+	return true, nil
+}
+
+// Name returns the directive identifier.
+func (v *NonZeroIPValidator) Name() string {
+	return "!zeroip"
+}
+
+// Mode returns the directive evaluation mode.
+func (v *NonZeroIPValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+// Handle validates the value and returns it unchanged.
+func (v *NonZeroIPValidator) Handle(val net.IP) (net.IP, error) {
+	_, err := v.Validate(val)
+	return val, err
+}
+
+// NonZeroIPAliasValidator provides the "nonzeroip" tag.
+type NonZeroIPAliasValidator struct {
+	NonZeroIPValidator
+}
+
+// Name returns the directive identifier.
+func (v *NonZeroIPAliasValidator) Name() string {
+	return "nonzeroip"
+}
+
+// IPRangeValidator validates that a net.IP is within an inclusive range.
+type IPRangeValidator struct {
+	Start net.IP `param:"start"`
+	End   net.IP `param:"end"`
+}
+
+// Validate checks whether the value is within the configured range.
+func (v *IPRangeValidator) Validate(val net.IP) (ok bool, err error) {
+	start := normalizeIP(v.Start)
+	end := normalizeIP(v.End)
+	value := normalizeIP(val)
+	if start == nil || end == nil {
+		return false, errors.New(`"start" and "end" must be valid IPs`)
+	}
+	if value == nil {
+		return false, fmt.Errorf("invalid IP")
+	}
+	if len(start) != len(end) {
+		return false, errors.New(`"start" and "end" must be same IP family`)
+	}
+	if len(value) != len(start) {
+		return false, errors.New("ip family mismatch")
+	}
+	if bytes.Compare(start, end) > 0 {
+		return false, errors.New(`"start" must be less than or equal to "end"`)
+	}
+	if bytes.Compare(value, start) < 0 || bytes.Compare(value, end) > 0 {
+		return false, fmt.Errorf("ip %v is not in range [%v, %v]", val, v.Start, v.End)
+	}
+	return true, nil
+}
+
+// Name returns the directive identifier.
+func (v *IPRangeValidator) Name() string {
+	return "iprange"
+}
+
+// Mode returns the directive evaluation mode.
+func (v *IPRangeValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+// ConvertParam parses the start/end parameters.
+func (v *IPRangeValidator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
+	if fieldValue.Type() != reflect.TypeOf(net.IP(nil)) {
+		return tagex.NewConversionError(field, raw, "net.IP")
+	}
+	ip, err := parseIPParam(raw)
+	if err != nil {
+		return err
+	}
+	fieldValue.Set(reflect.ValueOf(ip))
+	return nil
+}
+
+// Handle validates the value and returns it unchanged.
+func (v *IPRangeValidator) Handle(val net.IP) (net.IP, error) {
+	_, err := v.Validate(val)
+	return val, err
+}
+
+// NonZeroURLValidator validates that a url.URL is not zero.
+type NonZeroURLValidator struct{}
+
+// Validate checks whether the value is non-zero.
+func (v *NonZeroURLValidator) Validate(val url.URL) (ok bool, err error) {
+	if ok, err := validateNonZero(val); !ok {
+		return false, fmt.Errorf("url is zero")
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// Name returns the directive identifier.
+func (v *NonZeroURLValidator) Name() string {
+	return "!zerourl"
+}
+
+// Mode returns the directive evaluation mode.
+func (v *NonZeroURLValidator) Mode() tagex.DirectiveMode {
+	return tagex.EvalMode
+}
+
+// Handle validates the value and returns it unchanged.
+func (v *NonZeroURLValidator) Handle(val url.URL) (url.URL, error) {
+	_, err := v.Validate(val)
+	return val, err
+}
+
+// NonZeroURLAliasValidator provides the "nonzerourl" tag.
+type NonZeroURLAliasValidator struct {
+	NonZeroURLValidator
+}
+
+// Name returns the directive identifier.
+func (v *NonZeroURLAliasValidator) Name() string {
+	return "nonzerourl"
+}
+
 // OneOfFloat64Validator validates that a float64 matches one of the configured values.
 type OneOfFloat64Validator struct {
 	Values []float64 `param:"values"`
@@ -1427,6 +1770,40 @@ func splitList(raw string) []string {
 		out = append(out, item)
 	}
 	return out
+}
+
+func parseTimeParam(raw string) (time.Time, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return time.Time{}, fmt.Errorf("time cannot be empty")
+	}
+	t, err := time.Parse(time.RFC3339, raw)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid time %q: %v", raw, err)
+	}
+	return t, nil
+}
+
+func parseIPParam(raw string) (net.IP, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil, fmt.Errorf("ip cannot be empty")
+	}
+	ip := net.ParseIP(raw)
+	if ip == nil {
+		return nil, fmt.Errorf("invalid ip %q", raw)
+	}
+	return ip, nil
+}
+
+func normalizeIP(ip net.IP) net.IP {
+	if ip == nil {
+		return nil
+	}
+	if v4 := ip.To4(); v4 != nil {
+		return v4
+	}
+	return ip.To16()
 }
 
 // CompositeValidator validates a value by running multiple validators in order.

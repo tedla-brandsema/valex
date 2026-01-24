@@ -240,9 +240,20 @@ directly.
 | `HexValidator` | `string` | `hex` | - | Valid hex string (optional `0x`). |
 | `XMLValidator` | `string` | `xml` | - | Well-formed XML with at least one element. |
 | `JSONValidator` | `string` | `json` | - | Valid JSON. |
-| **Time** |  |  |  |  |
 | `TimeValidator` | `string` | `time` | `format` (`RFC3339`) | Valid time for layout (built-in names or raw layout). |
+| **Time** |  |  |  |  |
 | `NonZeroTimeValidator` | `time.Time` | `!zerotime` (alias: `nonzerotime`) | - | Time is not zero. |
+| `TimeBeforeValidator` | `time.Time` | `beforetime` | `before` | Time is before the configured time (RFC3339). |
+| `TimeAfterValidator` | `time.Time` | `aftertime` | `after` | Time is after the configured time (RFC3339). |
+| `TimeBetweenValidator` | `time.Time` | `betweentime` | `start`, `end` | Time is within the inclusive range (RFC3339). |
+| **Duration** |  |  |  |  |
+| `PositiveDurationValidator` | `time.Duration` | `posduration` | - | Duration is positive. |
+| `NonZeroDurationValidator` | `time.Duration` | `!zeroduration` (alias: `nonzeroduration`) | - | Duration is not zero. |
+| **IP** |  |  |  |  |
+| `NonZeroIPValidator` | `net.IP` | `!zeroip` (alias: `nonzeroip`) | - | IP is not zero or unspecified. |
+| `IPRangeValidator` | `net.IP` | `iprange` | `start`, `end` | IP is within the inclusive range. |
+| **URL** |  |  |  |  |
+| `NonZeroURLValidator` | `url.URL` | `!zerourl` (alias: `nonzerourl`) | - | URL is not zero. |
 
 ## License
 

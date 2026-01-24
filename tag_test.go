@@ -1,8 +1,11 @@
 package valex
 
 import (
+	"net"
+	neturl "net/url"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestValidateStruct_int(t *testing.T) {
@@ -167,6 +170,128 @@ func TestValidateStruct_float64(t *testing.T) {
 			}{Score: 1.5},
 			wantValid: false,
 			errSubstr: "invalid float",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			valid, err := ValidateStruct(tc.data)
+			if valid != tc.wantValid {
+				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
+			}
+			if !tc.wantValid && err != nil && tc.errSubstr != "" {
+				if !strings.Contains(err.Error(), tc.errSubstr) {
+					t.Errorf("expected error to contain %q, got %q", tc.errSubstr, err.Error())
+				}
+			}
+		})
+	}
+}
+
+func TestValidateStruct_timeDurationIPURL(t *testing.T) {
+	tests := []struct {
+		name      string
+		data      interface{}
+		wantValid bool
+		errSubstr string
+	}{
+		{
+			name: "Valid time before",
+			data: &struct {
+				When time.Time `val:"beforetime,before=2024-01-02T03:04:05Z"`
+			}{When: time.Date(2024, 1, 2, 3, 4, 4, 0, time.UTC)},
+			wantValid: true,
+		},
+		{
+			name: "Invalid time after",
+			data: &struct {
+				When time.Time `val:"aftertime,after=2024-01-02T03:04:05Z"`
+			}{When: time.Date(2024, 1, 2, 3, 4, 4, 0, time.UTC)},
+			wantValid: false,
+			errSubstr: "not after",
+		},
+		{
+			name: "Valid time between",
+			data: &struct {
+				When time.Time `val:"betweentime,start=2024-01-02T00:00:00Z,end=2024-01-03T00:00:00Z"`
+			}{When: time.Date(2024, 1, 2, 12, 0, 0, 0, time.UTC)},
+			wantValid: true,
+		},
+		{
+			name: "Invalid time between",
+			data: &struct {
+				When time.Time `val:"betweentime,start=2024-01-02T00:00:00Z,end=2024-01-03T00:00:00Z"`
+			}{When: time.Date(2024, 1, 4, 0, 0, 0, 0, time.UTC)},
+			wantValid: false,
+			errSubstr: "not in range",
+		},
+		{
+			name: "Valid positive duration",
+			data: &struct {
+				Delay time.Duration `val:"posduration"`
+			}{Delay: time.Second},
+			wantValid: true,
+		},
+		{
+			name: "Invalid positive duration",
+			data: &struct {
+				Delay time.Duration `val:"posduration"`
+			}{Delay: 0},
+			wantValid: false,
+			errSubstr: "not positive",
+		},
+		{
+			name: "Invalid non-zero duration",
+			data: &struct {
+				Delay time.Duration `val:"!zeroduration"`
+			}{Delay: 0},
+			wantValid: false,
+			errSubstr: "duration is zero",
+		},
+		{
+			name: "Valid non-zero IP",
+			data: &struct {
+				Addr net.IP `val:"!zeroip"`
+			}{Addr: net.ParseIP("192.168.1.1")},
+			wantValid: true,
+		},
+		{
+			name: "Invalid non-zero IP",
+			data: &struct {
+				Addr net.IP `val:"!zeroip"`
+			}{Addr: net.ParseIP("0.0.0.0")},
+			wantValid: false,
+			errSubstr: "ip is zero",
+		},
+		{
+			name: "Valid IP range",
+			data: &struct {
+				Addr net.IP `val:"iprange,start=192.168.1.10,end=192.168.1.20"`
+			}{Addr: net.ParseIP("192.168.1.15")},
+			wantValid: true,
+		},
+		{
+			name: "Invalid IP range",
+			data: &struct {
+				Addr net.IP `val:"iprange,start=192.168.1.10,end=192.168.1.20"`
+			}{Addr: net.ParseIP("192.168.1.30")},
+			wantValid: false,
+			errSubstr: "not in range",
+		},
+		{
+			name: "Valid non-zero URL",
+			data: &struct {
+				Addr neturl.URL `val:"!zerourl"`
+			}{Addr: neturl.URL{Host: "example.com"}},
+			wantValid: true,
+		},
+		{
+			name: "Invalid non-zero URL",
+			data: &struct {
+				Addr neturl.URL `val:"!zerourl"`
+			}{Addr: neturl.URL{}},
+			wantValid: false,
+			errSubstr: "url is zero",
 		},
 	}
 

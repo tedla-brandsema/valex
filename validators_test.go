@@ -2,6 +2,8 @@ package valex
 
 import (
 	"fmt"
+	"net"
+	neturl "net/url"
 	"regexp"
 	"strings"
 	"testing"
@@ -502,6 +504,194 @@ func TestNonZeroTimeValidator(t *testing.T) {
 	}{
 		{time.Time{}, false},
 		{time.Now(), true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestTimeBeforeValidator(t *testing.T) {
+	ref := time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)
+	v := &TimeBeforeValidator{Before: ref}
+	tests := []struct {
+		input time.Time
+		ok    bool
+	}{
+		{ref.Add(-time.Second), true},
+		{ref, false},
+		{ref.Add(time.Second), false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestTimeAfterValidator(t *testing.T) {
+	ref := time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)
+	v := &TimeAfterValidator{After: ref}
+	tests := []struct {
+		input time.Time
+		ok    bool
+	}{
+		{ref.Add(time.Second), true},
+		{ref, false},
+		{ref.Add(-time.Second), false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestTimeBetweenValidator(t *testing.T) {
+	start := time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC)
+	end := time.Date(2024, 1, 3, 0, 0, 0, 0, time.UTC)
+	v := &TimeBetweenValidator{Start: start, End: end}
+	tests := []struct {
+		input time.Time
+		ok    bool
+	}{
+		{start, true},
+		{start.Add(12 * time.Hour), true},
+		{end, true},
+		{start.Add(-time.Second), false},
+		{end.Add(time.Second), false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestTimeBetweenValidatorBounds(t *testing.T) {
+	v := &TimeBetweenValidator{
+		Start: time.Date(2024, 1, 3, 0, 0, 0, 0, time.UTC),
+		End:   time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC),
+	}
+	ok, err := v.Validate(time.Date(2024, 1, 2, 12, 0, 0, 0, time.UTC))
+	if ok || err == nil {
+		t.Fatalf("expected bounds error, got ok=%v err=%v", ok, err)
+	}
+}
+
+func TestPositiveDurationValidator(t *testing.T) {
+	v := &PositiveDurationValidator{}
+	tests := []struct {
+		input time.Duration
+		ok    bool
+	}{
+		{-time.Second, false},
+		{0, false},
+		{time.Second, true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestNonZeroDurationValidator(t *testing.T) {
+	v := &NonZeroDurationValidator{}
+	tests := []struct {
+		input time.Duration
+		ok    bool
+	}{
+		{0, false},
+		{time.Second, true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestNonZeroIPValidator(t *testing.T) {
+	v := &NonZeroIPValidator{}
+	tests := []struct {
+		input net.IP
+		ok    bool
+	}{
+		{nil, false},
+		{net.IPv4(0, 0, 0, 0), false},
+		{net.ParseIP("0.0.0.0"), false},
+		{net.ParseIP("192.168.1.1"), true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestIPRangeValidator(t *testing.T) {
+	v := &IPRangeValidator{
+		Start: net.ParseIP("192.168.1.10"),
+		End:   net.ParseIP("192.168.1.20"),
+	}
+	tests := []struct {
+		input net.IP
+		ok    bool
+	}{
+		{net.ParseIP("192.168.1.9"), false},
+		{net.ParseIP("192.168.1.10"), true},
+		{net.ParseIP("192.168.1.15"), true},
+		{net.ParseIP("192.168.1.20"), true},
+		{net.ParseIP("192.168.1.21"), false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestIPRangeValidatorBounds(t *testing.T) {
+	v := &IPRangeValidator{
+		Start: net.ParseIP("192.168.1.20"),
+		End:   net.ParseIP("192.168.1.10"),
+	}
+	ok, err := v.Validate(net.ParseIP("192.168.1.15"))
+	if ok || err == nil {
+		t.Fatalf("expected bounds error, got ok=%v err=%v", ok, err)
+	}
+}
+
+func TestIPRangeValidatorFamilyMismatch(t *testing.T) {
+	v := &IPRangeValidator{
+		Start: net.ParseIP("192.168.1.10"),
+		End:   net.ParseIP("192.168.1.20"),
+	}
+	ok, err := v.Validate(net.ParseIP("2001:db8::1"))
+	if ok || err == nil {
+		t.Fatalf("expected family mismatch error, got ok=%v err=%v", ok, err)
+	}
+}
+
+func TestNonZeroURLValidator(t *testing.T) {
+	v := &NonZeroURLValidator{}
+	tests := []struct {
+		input neturl.URL
+		ok    bool
+	}{
+		{neturl.URL{}, false},
+		{neturl.URL{Host: "example.com"}, true},
+		{neturl.URL{Scheme: "https", Host: "example.com"}, true},
 	}
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
