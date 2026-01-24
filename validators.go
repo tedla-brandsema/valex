@@ -109,7 +109,7 @@ func (v *IntRangeValidator) Validate(val int) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *IntRangeValidator) Name() string {
-	return "range"
+	return "rangeint"
 }
 
 // Mode returns the directive evaluation mode.
@@ -136,7 +136,7 @@ func (v *Float64RangeValidator) Validate(val float64) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *Float64RangeValidator) Name() string {
-	return "rangef64"
+	return "rangefloat"
 }
 
 // Mode returns the directive evaluation mode.
@@ -160,7 +160,7 @@ func (v *NonNegativeIntValidator) Validate(val int) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *NonNegativeIntValidator) Name() string {
-	return "pos"
+	return "posint"
 }
 
 // Mode returns the directive evaluation mode.
@@ -184,7 +184,7 @@ func (v *NonNegativeFloat64Validator) Validate(val float64) (ok bool, err error)
 
 // Name returns the directive identifier.
 func (v *NonNegativeFloat64Validator) Name() string {
-	return "posf64"
+	return "posfloat"
 }
 
 // Mode returns the directive evaluation mode.
@@ -208,7 +208,7 @@ func (v *NonPositiveIntValidator) Validate(val int) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *NonPositiveIntValidator) Name() string {
-	return "neg"
+	return "negint"
 }
 
 // Mode returns the directive evaluation mode.
@@ -232,7 +232,7 @@ func (v *NonPositiveFloat64Validator) Validate(val float64) (ok bool, err error)
 
 // Name returns the directive identifier.
 func (v *NonPositiveFloat64Validator) Name() string {
-	return "negf64"
+	return "negfloat"
 }
 
 // Mode returns the directive evaluation mode.
@@ -751,7 +751,7 @@ func (v *MinFloat64Validator) Validate(val float64) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *MinFloat64Validator) Name() string {
-	return "minf64"
+	return "minfloat"
 }
 
 // Mode returns the directive evaluation mode.
@@ -803,7 +803,7 @@ func (v *MaxFloat64Validator) Validate(val float64) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *MaxFloat64Validator) Name() string {
-	return "maxf64"
+	return "maxfloat"
 }
 
 // Mode returns the directive evaluation mode.
@@ -827,7 +827,7 @@ func (v *NonZeroIntValidator) Validate(val int) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *NonZeroIntValidator) Name() string {
-	return "!zero"
+	return "!zeroint"
 }
 
 // Mode returns the directive evaluation mode.
@@ -851,7 +851,7 @@ func (v *NonZeroFloat64Validator) Validate(val float64) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *NonZeroFloat64Validator) Name() string {
-	return "!zerof64"
+	return "!zerofloat"
 }
 
 // Mode returns the directive evaluation mode.
@@ -865,24 +865,24 @@ func (v *NonZeroFloat64Validator) Handle(val float64) (float64, error) {
 	return val, err
 }
 
-// NonZeroFloat64AliasValidator provides the legacy "nonzerof64" tag.
+// NonZeroFloat64AliasValidator provides the "nonzerofloat" tag.
 type NonZeroFloat64AliasValidator struct {
 	NonZeroFloat64Validator
 }
 
 // Name returns the directive identifier.
 func (v *NonZeroFloat64AliasValidator) Name() string {
-	return "nonzerof64"
+	return "nonzerofloat"
 }
 
-// NonZeroIntAliasValidator provides the legacy "nonzero" tag.
+// NonZeroIntAliasValidator provides the "nonzeroint" tag.
 type NonZeroIntAliasValidator struct {
 	NonZeroIntValidator
 }
 
 // Name returns the directive identifier.
 func (v *NonZeroIntAliasValidator) Name() string {
-	return "nonzero"
+	return "nonzeroint"
 }
 
 // NonZeroTimeValidator validates that a time.Time is not zero.
@@ -934,7 +934,7 @@ func (v *OneOfFloat64Validator) Validate(val float64) (ok bool, err error) {
 
 // Name returns the directive identifier.
 func (v *OneOfFloat64Validator) Name() string {
-	return "oneoff64"
+	return "oneoffloat"
 }
 
 // Mode returns the directive evaluation mode.

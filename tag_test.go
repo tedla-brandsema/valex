@@ -15,7 +15,7 @@ func TestValidateStruct_int(t *testing.T) {
 		{
 			name: "Valid int range and min length string",
 			data: &struct {
-				Age  int    `val:"range,min=0,max=120"`
+				Age  int    `val:"rangeint,min=0,max=120"`
 				Name string `val:"min,size=3"`
 			}{Age: 30, Name: "John"},
 			wantValid: true,
@@ -23,7 +23,7 @@ func TestValidateStruct_int(t *testing.T) {
 		{
 			name: "Invalid int range",
 			data: &struct {
-				Age int `val:"range,min=0,max=120"`
+				Age int `val:"rangeint,min=0,max=120"`
 			}{Age: -1},
 			wantValid: false,
 			errSubstr: "out of range",
@@ -141,14 +141,14 @@ func TestValidateStruct_float64(t *testing.T) {
 		{
 			name: "Valid float64 range",
 			data: &struct {
-				Score float64 `val:"rangef64,min=0.5,max=1.5"`
+				Score float64 `val:"rangefloat,min=0.5,max=1.5"`
 			}{Score: 1.0},
 			wantValid: true,
 		},
 		{
 			name: "Invalid float64 min",
 			data: &struct {
-				Score float64 `val:"minf64,min=0.5"`
+				Score float64 `val:"minfloat,min=0.5"`
 			}{Score: 0.25},
 			wantValid: false,
 			errSubstr: "less than minimum",
@@ -156,14 +156,14 @@ func TestValidateStruct_float64(t *testing.T) {
 		{
 			name: "Valid float64 oneof",
 			data: &struct {
-				Score float64 `val:"oneoff64,values=1.5|2.5|3.5"`
+				Score float64 `val:"oneoffloat,values=1.5|2.5|3.5"`
 			}{Score: 2.5},
 			wantValid: true,
 		},
 		{
 			name: "Invalid float64 oneof value",
 			data: &struct {
-				Score float64 `val:"oneoff64,values=1.5|bad"`
+				Score float64 `val:"oneoffloat,values=1.5|bad"`
 			}{Score: 1.5},
 			wantValid: false,
 			errSubstr: "invalid float",

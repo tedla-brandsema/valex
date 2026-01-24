@@ -121,7 +121,7 @@ import (
 type User struct {
 	Name  string `val:"min,size=3"`
 	Email string `val:"email"`
-	Age   int    `val:"range,min=0,max=120"`
+	Age   int    `val:"rangeint,min=0,max=120"`
 }
 
 func main() {
@@ -201,21 +201,21 @@ directly.
 | `CmpRangeValidator[T]` | `cmp.Ordered` | - | `min`, `max` | Inclusive range for ordered types. |
 | `NonZeroValidator[T]` | `any` | - | - | Value is not zero. |
 | **Ints** |  |  |  |  |
-| `IntRangeValidator` | `int` | `range` | `min`, `max` | Inclusive int range. |
+| `IntRangeValidator` | `int` | `rangeint` | `min`, `max` | Inclusive int range. |
 | `MinIntValidator` | `int` | `minint` | `min` | Int greater than or equal to `min`. |
 | `MaxIntValidator` | `int` | `maxint` | `max` | Int less than or equal to `max`. |
-| `NonNegativeIntValidator` | `int` | `pos` | - | Int is non-negative. |
-| `NonPositiveIntValidator` | `int` | `neg` | - | Int is non-positive. |
-| `NonZeroIntValidator` | `int` | `!zero` (alias: `nonzero`) | - | Int is not zero. |
+| `NonNegativeIntValidator` | `int` | `posint` | - | Int is non-negative. |
+| `NonPositiveIntValidator` | `int` | `negint` | - | Int is non-positive. |
+| `NonZeroIntValidator` | `int` | `!zeroint` (alias: `nonzeroint`) | - | Int is not zero. |
 | `OneOfIntValidator` | `int` | `oneofint` | `values` | Int is in `values` (pipe-separated list). |
 | **Float64** |  |  |  |  |
-| `Float64RangeValidator` | `float64` | `rangef64` | `min`, `max` | Inclusive float64 range. |
-| `MinFloat64Validator` | `float64` | `minf64` | `min` | Float64 greater than or equal to `min`. |
-| `MaxFloat64Validator` | `float64` | `maxf64` | `max` | Float64 less than or equal to `max`. |
-| `NonNegativeFloat64Validator` | `float64` | `posf64` | - | Float64 is non-negative. |
-| `NonPositiveFloat64Validator` | `float64` | `negf64` | - | Float64 is non-positive. |
-| `NonZeroFloat64Validator` | `float64` | `!zerof64` (alias: `nonzerof64`) | - | Float64 is not zero. |
-| `OneOfFloat64Validator` | `float64` | `oneoff64` | `values` | Float64 is in `values` (pipe-separated list). |
+| `Float64RangeValidator` | `float64` | `rangefloat` | `min`, `max` | Inclusive float64 range. |
+| `MinFloat64Validator` | `float64` | `minfloat` | `min` | Float64 greater than or equal to `min`. |
+| `MaxFloat64Validator` | `float64` | `maxfloat` | `max` | Float64 less than or equal to `max`. |
+| `NonNegativeFloat64Validator` | `float64` | `posfloat` | - | Float64 is non-negative. |
+| `NonPositiveFloat64Validator` | `float64` | `negfloat` | - | Float64 is non-positive. |
+| `NonZeroFloat64Validator` | `float64` | `!zerofloat` (alias: `nonzerofloat`) | - | Float64 is not zero. |
+| `OneOfFloat64Validator` | `float64` | `oneoffloat` | `values` | Float64 is in `values` (pipe-separated list). |
 | **Strings** |  |  |  |  |
 | `UrlValidator` | `string` | `url` | - | Valid URL (absolute). |
 | `EmailValidator` | `string` | `email` | - | Valid email address. |

@@ -14,7 +14,7 @@ import (
 func TestFormValidatorBindAndValidate(t *testing.T) {
 	type Input struct {
 		Name   string   `field:"name, max=1, required=true, default=unused" val:"min,size=3"`
-		Age    int      `field:"age, max=1, required=true, default=0" val:"range,min=0,max=120"`
+		Age    int      `field:"age, max=1, required=true, default=0" val:"rangeint,min=0,max=120"`
 		Active bool     `field:"active, max=1, required=false, default=false"`
 		Score  float64  `field:"score, max=1, required=false, default=0"`
 		Tags   []string `field:"tags, max=2, required=false, default=unused"`
