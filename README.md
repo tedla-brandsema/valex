@@ -199,6 +199,7 @@ directly.
 | --- | --- | --- | --- | --- |
 | **Generic** |  |  |  |  |
 | `CmpRangeValidator[T]` | `cmp.Ordered` | - | `min`, `max` | Inclusive range for ordered types. |
+| `NonZeroValidator[T]` | `any` | - | - | Value is not zero. |
 | **Ints** |  |  |  |  |
 | `IntRangeValidator` | `int` | `range` | `min`, `max` | Inclusive int range. |
 | `MinIntValidator` | `int` | `minint` | `min` | Int greater than or equal to `min`. |
@@ -207,6 +208,14 @@ directly.
 | `NonPositiveIntValidator` | `int` | `neg` | - | Int is non-positive. |
 | `NonZeroIntValidator` | `int` | `!zero` (alias: `nonzero`) | - | Int is not zero. |
 | `OneOfIntValidator` | `int` | `oneofint` | `values` | Int is in `values` (pipe-separated list). |
+| **Float64** |  |  |  |  |
+| `Float64RangeValidator` | `float64` | `rangef64` | `min`, `max` | Inclusive float64 range. |
+| `MinFloat64Validator` | `float64` | `minf64` | `min` | Float64 greater than or equal to `min`. |
+| `MaxFloat64Validator` | `float64` | `maxf64` | `max` | Float64 less than or equal to `max`. |
+| `NonNegativeFloat64Validator` | `float64` | `posf64` | - | Float64 is non-negative. |
+| `NonPositiveFloat64Validator` | `float64` | `negf64` | - | Float64 is non-positive. |
+| `NonZeroFloat64Validator` | `float64` | `!zerof64` (alias: `nonzerof64`) | - | Float64 is not zero. |
+| `OneOfFloat64Validator` | `float64` | `oneoff64` | `values` | Float64 is in `values` (pipe-separated list). |
 | **Strings** |  |  |  |  |
 | `UrlValidator` | `string` | `url` | - | Valid URL (absolute). |
 | `EmailValidator` | `string` | `email` | - | Valid email address. |

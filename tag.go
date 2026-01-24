@@ -23,6 +23,16 @@ func init() {
 	tagex.RegisterDirective(&tag, &NonZeroIntAliasValidator{})
 	tagex.RegisterDirective(&tag, &OneOfIntValidator{})
 
+	// Float64 directives
+	tagex.RegisterDirective(&tag, &Float64RangeValidator{})
+	tagex.RegisterDirective(&tag, &NonNegativeFloat64Validator{})
+	tagex.RegisterDirective(&tag, &NonPositiveFloat64Validator{})
+	tagex.RegisterDirective(&tag, &MinFloat64Validator{})
+	tagex.RegisterDirective(&tag, &MaxFloat64Validator{})
+	tagex.RegisterDirective(&tag, &NonZeroFloat64Validator{})
+	tagex.RegisterDirective(&tag, &NonZeroFloat64AliasValidator{})
+	tagex.RegisterDirective(&tag, &OneOfFloat64Validator{})
+
 	// String directives
 	tagex.RegisterDirective(&tag, &UrlValidator{})
 	tagex.RegisterDirective(&tag, &EmailValidator{})

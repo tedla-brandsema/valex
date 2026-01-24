@@ -30,6 +30,123 @@ func TestIntRangeValidator(t *testing.T) {
 	}
 }
 
+func TestFloat64RangeValidator(t *testing.T) {
+	v := &Float64RangeValidator{Min: 1.5, Max: 3.5}
+	tests := []struct {
+		input float64
+		ok    bool
+	}{
+		{1.5, true},
+		{2.1, true},
+		{3.5, true},
+		{1.4, false},
+		{3.6, false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestNonZeroValidator(t *testing.T) {
+	t.Run("int", func(t *testing.T) {
+		v := &NonZeroValidator[int]{}
+		tests := []struct {
+			input int
+			ok    bool
+		}{
+			{0, false},
+			{1, true},
+			{-1, true},
+		}
+		for _, tc := range tests {
+			ok, err := v.Validate(tc.input)
+			if ok != tc.ok {
+				t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+			}
+		}
+	})
+
+	t.Run("string", func(t *testing.T) {
+		v := &NonZeroValidator[string]{}
+		tests := []struct {
+			input string
+			ok    bool
+		}{
+			{"", false},
+			{"value", true},
+		}
+		for _, tc := range tests {
+			ok, err := v.Validate(tc.input)
+			if ok != tc.ok {
+				t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+			}
+		}
+	})
+
+	t.Run("struct", func(t *testing.T) {
+		type sample struct {
+			ID   int
+			Name string
+		}
+		v := &NonZeroValidator[sample]{}
+		tests := []struct {
+			input sample
+			ok    bool
+		}{
+			{sample{}, false},
+			{sample{ID: 1}, true},
+			{sample{Name: "name"}, true},
+		}
+		for _, tc := range tests {
+			ok, err := v.Validate(tc.input)
+			if ok != tc.ok {
+				t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+			}
+		}
+	})
+
+	t.Run("pointer", func(t *testing.T) {
+		v := &NonZeroValidator[*int]{}
+		var zero *int
+		value := 5
+		tests := []struct {
+			input *int
+			ok    bool
+		}{
+			{zero, false},
+			{&value, true},
+		}
+		for _, tc := range tests {
+			ok, err := v.Validate(tc.input)
+			if ok != tc.ok {
+				t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+			}
+		}
+	})
+
+	t.Run("nil interface", func(t *testing.T) {
+		v := &NonZeroValidator[any]{}
+		tests := []struct {
+			input any
+			ok    bool
+		}{
+			{nil, false},
+			{0, false},
+			{"", false},
+			{"ok", true},
+		}
+		for _, tc := range tests {
+			ok, err := v.Validate(tc.input)
+			if ok != tc.ok {
+				t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+			}
+		}
+	})
+}
+
 func TestNonNegativeIntValidator(t *testing.T) {
 	v := &NonNegativeIntValidator{}
 	tests := []struct {
@@ -48,6 +165,24 @@ func TestNonNegativeIntValidator(t *testing.T) {
 	}
 }
 
+func TestNonNegativeFloat64Validator(t *testing.T) {
+	v := &NonNegativeFloat64Validator{}
+	tests := []struct {
+		input float64
+		ok    bool
+	}{
+		{-1.5, false},
+		{0, true},
+		{1.5, true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
 func TestNonPositiveIntValidator(t *testing.T) {
 	v := &NonPositiveIntValidator{}
 	tests := []struct {
@@ -62,6 +197,24 @@ func TestNonPositiveIntValidator(t *testing.T) {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestNonPositiveFloat64Validator(t *testing.T) {
+	v := &NonPositiveFloat64Validator{}
+	tests := []struct {
+		input float64
+		ok    bool
+	}{
+		{-1.5, true},
+		{0, true},
+		{1.5, false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -251,6 +404,24 @@ func TestMinIntValidator(t *testing.T) {
 	}
 }
 
+func TestMinFloat64Validator(t *testing.T) {
+	v := &MinFloat64Validator{Min: 1.5}
+	tests := []struct {
+		input float64
+		ok    bool
+	}{
+		{1.5, true},
+		{1.6, true},
+		{1.4, false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
 func TestMaxIntValidator(t *testing.T) {
 	v := &MaxIntValidator{Max: 10}
 	tests := []struct {
@@ -269,6 +440,24 @@ func TestMaxIntValidator(t *testing.T) {
 	}
 }
 
+func TestMaxFloat64Validator(t *testing.T) {
+	v := &MaxFloat64Validator{Max: 1.5}
+	tests := []struct {
+		input float64
+		ok    bool
+	}{
+		{1.5, true},
+		{1.4, true},
+		{1.6, false},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
 func TestNonZeroIntValidator(t *testing.T) {
 	v := &NonZeroIntValidator{}
 	tests := []struct {
@@ -283,6 +472,24 @@ func TestNonZeroIntValidator(t *testing.T) {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestNonZeroFloat64Validator(t *testing.T) {
+	v := &NonZeroFloat64Validator{}
+	tests := []struct {
+		input float64
+		ok    bool
+	}{
+		{0, false},
+		{1.5, true},
+		{-1.5, true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -336,6 +543,24 @@ func TestOneOfIntValidator(t *testing.T) {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestOneOfFloat64Validator(t *testing.T) {
+	v := &OneOfFloat64Validator{Values: []float64{1.5, 3.5, 5.5}}
+	tests := []struct {
+		input float64
+		ok    bool
+	}{
+		{1.5, true},
+		{2.5, false},
+		{5.5, true},
+	}
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -397,7 +622,7 @@ func TestUUIDValidator(t *testing.T) {
 		input string
 		ok    bool
 	}{
-		{"550e8400-e29b-41d4-a716-446655440000", true}, // v4
+		{"550e8400-e29b-41d4-a716-446655440000", true},  // v4
 		{"6ba7b810-9dad-11d1-80b4-00c04fd430c8", false}, // v1 default expects v4
 		{"550e8400e29b41d4a716446655440000", false},
 	}

@@ -130,3 +130,57 @@ func TestValidateStruct_string(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateStruct_float64(t *testing.T) {
+	tests := []struct {
+		name      string
+		data      interface{}
+		wantValid bool
+		errSubstr string
+	}{
+		{
+			name: "Valid float64 range",
+			data: &struct {
+				Score float64 `val:"rangef64,min=0.5,max=1.5"`
+			}{Score: 1.0},
+			wantValid: true,
+		},
+		{
+			name: "Invalid float64 min",
+			data: &struct {
+				Score float64 `val:"minf64,min=0.5"`
+			}{Score: 0.25},
+			wantValid: false,
+			errSubstr: "less than minimum",
+		},
+		{
+			name: "Valid float64 oneof",
+			data: &struct {
+				Score float64 `val:"oneoff64,values=1.5|2.5|3.5"`
+			}{Score: 2.5},
+			wantValid: true,
+		},
+		{
+			name: "Invalid float64 oneof value",
+			data: &struct {
+				Score float64 `val:"oneoff64,values=1.5|bad"`
+			}{Score: 1.5},
+			wantValid: false,
+			errSubstr: "invalid float",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			valid, err := ValidateStruct(tc.data)
+			if valid != tc.wantValid {
+				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
+			}
+			if !tc.wantValid && err != nil && tc.errSubstr != "" {
+				if !strings.Contains(err.Error(), tc.errSubstr) {
+					t.Errorf("expected error to contain %q, got %q", tc.errSubstr, err.Error())
+				}
+			}
+		})
+	}
+}
