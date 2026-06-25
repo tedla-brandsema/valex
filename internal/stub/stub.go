@@ -1,11 +1,11 @@
-// Package valextest provides shared test fixtures for the valex module.
+// Package stub provides shared test fixtures for the valex module.
 //
 // It lives under internal/ and is imported only from _test.go files, so it is
 // never part of a production build, and internal/ keeps it out of reach of other
 // modules. Importing it (a blank import is enough) registers a couple of stub
 // directives against valex's "val" tag, letting tests exercise the validation
 // pipeline without depending on the valex/validators catalog.
-package valextest
+package stub
 
 import (
 	"fmt"

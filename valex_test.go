@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/tedla-brandsema/valex"
-	_ "github.com/tedla-brandsema/valex/internal/valextest" // registers stub directives
+	_ "github.com/tedla-brandsema/valex/internal/stub" // registers stub directives
 )
 
 // These exercise the engine itself (ValidateStruct, RegisterDirective,

@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/tedla-brandsema/tagex"
-	_ "github.com/tedla-brandsema/valex/internal/valextest" // registers stub directives
+	_ "github.com/tedla-brandsema/valex/internal/stub" // registers stub directives
 )
 
 func TestFormValidatorBindAndValidate(t *testing.T) {
