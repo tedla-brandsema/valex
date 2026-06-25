@@ -1,122 +1,85 @@
 # Valex
 
-*Valex* is an extensible validation library for Go. It provides a flexible way to define type-safe validators and wrap 
-values in a way that ensures they satisfy custom validation rules before being set. 
+*Valex* is an extensible validation library for Go. It pairs a small, dependency-light
+validation **engine** with opt-in packages for a ready-made directive catalog and HTTP
+form binding, so you depend only on what you use.
 
-Features
+## Packages
 
-* **Generic Validators:** Define validators for any ordered type (e.g. integers, floats, strings).
-* **Validator Interface & Adapter:** Implement your own validation logic via the `Validator[T]` interface or create quick validators using the `ValidatorFunc[T]` adapter.
-* **Validated Value Wrapper:** Use the `ValidatedValue[T]` type to ensure that only valid values (as determined by your validator) are set.
-* **Tag-Based Validation:** Use struct tags with built-in directives via `ValidateStruct`.
-* **Custom Directives:** Register your own tag directives with `RegisterDirective`.
+| Import | Responsibility |
+| --- | --- |
+| `github.com/tedla-brandsema/valex` | The engine: the `Validator[T]` interface and `ValidatorFunc[T]` adapter, the `ValidatedValue[T]` wrapper, `MustValidate`, the `val` struct tag (`ValidateStruct`), `RegisterDirective`, and re-exported error types. |
+| `github.com/tedla-brandsema/valex/validators` | A catalog of ready-made `val` directives (ranges, lengths, URLs, emails, IPs, time, JSON/XML, regex, …). Directives are **opt-in** — you register the ones you want. |
+| `github.com/tedla-brandsema/valex/forms` | Bind `net/http` request values into structs and validate them. Kept separate so the core engine never imports `net/http`. |
+
+## Features
+
+* **Generic validators** — define type-safe validators via the `Validator[T]` interface or the `ValidatorFunc[T]` adapter.
+* **Validated value wrapper** — `ValidatedValue[T]` only stores values that pass validation.
+* **Tag-based validation** — validate struct fields with the `val` tag and `ValidateStruct`.
+* **Opt-in directive catalog** — register only the directives you need from `valex/validators`.
+* **Custom directives** — extend the `val` tag with `RegisterDirective`.
+* **HTTP form binding** — parse and validate requests with `valex/forms`.
+* **Inspectable errors** — error types are re-exported from the engine, so you handle them without importing `tagex`.
 
 ## Installation
-
-To add Valex to your project, run:
 
 ```
 go get -u github.com/tedla-brandsema/valex@latest
 ```
 
-## Examples 
+## Programmatic validation
 
-### Defining a Custom Validator
-
-Implement the `Validator[T]` interface for your type. For example, here’s a simple integer range validator:
-
-```go
-package main
-
-import (
-	"fmt"
-	"github.com/tedla-brandsema/valex"
-)
-
-type IntRangeValidator struct {
-	Min int
-	Max int
-}
-
-func (v IntRangeValidator) Validate(val int) (bool, error) {
-	if val < v.Min || val > v.Max {
-		return false, fmt.Errorf("value %d is out of range [%d, %d]", val, v.Min, v.Max)
-	}
-	return true, nil
-}
-
-func main() {
-	// Create a Validator
-	v := IntRangeValidator{
-		Min: 1,
-		Max: 10,
-	}
-
-	if ok, err := v.Validate(11); !ok {
-		fmt.Println("Error:", err)
-	}
-
-	// Or use a Validator in conjunction with a ValidatedValue
-	vv := valex.ValidatedValue[int]{
-		Validator: v,
-	}
-	
-	if err := vv.Set(5); err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	
-	fmt.Println("Validated value:", vv.Get())
-}
-```
-
-### Using ValidatorFunc
-
-You can also use the `ValidatorFunc[T]` adapter to quickly create validators from functions:
+Implement the `Validator[T]` interface for your type, or adapt a function with
+`ValidatorFunc[T]`, and use `ValidatedValue[T]` for guarded assignment:
 
 ```go
 package main
 
 import (
 	"fmt"
+
 	"github.com/tedla-brandsema/valex"
 )
 
 func main() {
-	// Create a validator for strings that ensures they are non-empty.
-	nonEmptyValidator := valex.ValidatorFunc[string](func(val string) (bool, error) {
+	// A quick validator from a function.
+	nonEmpty := valex.ValidatorFunc[string](func(val string) (bool, error) {
 		if val == "" {
 			return false, fmt.Errorf("string cannot be empty")
 		}
 		return true, nil
 	})
 
-	vv := valex.ValidatedValue[string]{
-		Validator: nonEmptyValidator,
-	}
-
+	vv := valex.ValidatedValue[string]{Validator: nonEmpty}
 	if err := vv.Set("hello world"); err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("error:", err)
 		return
 	}
-
-	fmt.Println("Validated value:", vv.Get())
+	fmt.Println("validated value:", vv.Get())
 }
 ```
 
-### Tag-Based Validation
+## Tag-based validation
 
-You can validate struct fields by using the `val` tag and calling `ValidateStruct`.
-Optionally pass additional `tagex.Tag` values to process multiple tags in one pass:
+The engine ships **no** directives of its own. Register the ones you need from
+`valex/validators` (typically in `init`), then call `ValidateStruct`:
 
 ```go
 package main
 
 import (
 	"fmt"
+
 	"github.com/tedla-brandsema/valex"
-	"github.com/tedla-brandsema/tagex"
+	"github.com/tedla-brandsema/valex/validators"
 )
+
+func init() {
+	valex.RegisterDirective(&validators.MinLengthValidator{})
+	valex.RegisterDirective(&validators.EmailValidator{})
+	valex.RegisterDirective(&validators.IntRangeValidator{})
+}
 
 type User struct {
 	Name  string `val:"min,size=3"`
@@ -125,35 +88,36 @@ type User struct {
 }
 
 func main() {
-	user := &User{Name: "Al", Email: "invalid", Age: 200}
-	tag := tagex.NewTag("extra")
-	ok, err := valex.ValidateStruct(user, &tag)
+	ok, err := valex.ValidateStruct(&User{Name: "Al", Email: "invalid", Age: 200})
 	fmt.Println(ok, err)
 }
 ```
 
-### Registering Custom Directives
+See the [`validators`](https://pkg.go.dev/github.com/tedla-brandsema/valex/validators)
+package for the full catalog, or the [table below](#built-in-directives).
 
-Register your own directives to extend the `val` tag:
+## Custom directives
+
+A directive is any `tagex.Directive[T]` — implement `Name`, `Mode`, and `Handle`,
+then register it:
 
 ```go
 package main
 
 import (
 	"fmt"
-	"github.com/tedla-brandsema/valex"
+
 	"github.com/tedla-brandsema/tagex"
+	"github.com/tedla-brandsema/valex"
 )
 
 type EvenDirective struct{}
 
-func (d *EvenDirective) Name() string { return "even" }
-func (d *EvenDirective) Mode() tagex.DirectiveMode {
-	return tagex.EvalMode
-}
+func (d *EvenDirective) Name() string              { return "even" }
+func (d *EvenDirective) Mode() tagex.DirectiveMode { return tagex.EvalMode }
 func (d *EvenDirective) Handle(val int) (int, error) {
 	if val%2 != 0 {
-		return 0, fmt.Errorf("value %d is not even", val)
+		return val, fmt.Errorf("value %d is not even", val)
 	}
 	return val, nil
 }
@@ -164,70 +128,95 @@ func main() {
 	type Item struct {
 		Count int `val:"even"`
 	}
-
-	item := &Item{Count: 3}
-	ok, err := valex.ValidateStruct(item)
+	ok, err := valex.ValidateStruct(&Item{Count: 3})
 	fmt.Println(ok, err)
 }
 ```
 
-### Form Validation
+## HTTP form validation
 
-`NewFormValidator` calls `request.ParseForm()`, which parses both POST bodies and
-URL query parameters. That means you can use `FormValidator` with GET requests
-as well as standard form submissions.
+`valex/forms` binds request values into a struct using `field` tags, then validates
+the `val` tags. `forms.New` calls `request.ParseForm`, which reads both POST bodies
+and URL query parameters (so GET requests work too). `forms.Validate` is a convenience
+wrapper that returns a `*forms.Error` carrying an HTTP status code; `forms.Bind` binds
+without validating when you are outside an HTTP handler.
 
-For convenience, `ValidateForm` wraps request parsing and validation and returns
-a `FormError` with an HTTP status code you can use for responses. If you only
-need binding (outside of HTTP handlers), `BindFormValues` accepts `url.Values`
-directly.
+```go
+type Signup struct {
+	Name  string `field:"name" val:"min,size=3"`
+	Email string `field:"email" val:"email"`
+}
 
-### How It Works
+func handler(w http.ResponseWriter, r *http.Request) {
+	var in Signup
+	if ok, err := forms.Validate(r, &in); !ok {
+		var ferr *forms.Error
+		errors.As(err, &ferr)
+		http.Error(w, err.Error(), ferr.StatusCode())
+		return
+	}
+	// ... use in
+}
+```
 
-* **Validator Interface:**\
-    Define a type that implements the method:`Validate(val T) (ok bool, err error)`
-    A successful validation should return `true` (with a `nil` error), whereas a failure should return `false` and an appropriate error message.
+## Error handling
 
-* **ValidatedValue:**\
-    This type holds a value of type `T` along with an associated `Validator[T]`. 
-	* `Set(val T) error`: Uses the validator to ensure that only valid values are stored.
-	* `Get() T`: Returns the current value.
+`ValidateStruct` and the `forms` helpers return errors you can inspect with
+`errors.As` / `errors.Is`. The engine re-exports the underlying error types, so you
+do **not** need to import `tagex`:
 
-## Built-in Validators
+```go
+ok, err := valex.ValidateStruct(&User{ /* ... */ })
+if err != nil {
+	var conv *valex.ConversionError
+	switch {
+	case errors.As(err, &conv):
+		// a parameter value could not be converted
+	case errors.Is(err, valex.ErrNoValidator):
+		// ...
+	}
+}
+```
+
+## Built-in directives
+
+From `github.com/tedla-brandsema/valex/validators`. Register each with
+`valex.RegisterDirective(&XxxValidator{})` before validating.
 
 | Validator | Type | Tag | Params (defaults) | Description |
 | --- | --- | --- | --- | --- |
-| **Generic** |  |  |  |  |
-| `CmpRangeValidator[T]` | `cmp.Ordered` | - | `min`, `max` | Inclusive range for ordered types. |
-| `NonZeroValidator[T]` | `any` | - | - | Value is not zero. |
+| **Generic (programmatic, no tag)** |  |  |  |  |
+| `CmpRangeValidator[T]` | `cmp.Ordered` | - | `Min`, `Max` | Inclusive range for ordered types. |
+| `NonZeroValidator[T]` | `any` | - | - | Value is not the zero value. |
+| `CompositeValidator[T]` | `cmp.Ordered` | - | `Validators` | Runs several validators in order. |
 | **Ints** |  |  |  |  |
 | `IntRangeValidator` | `int` | `rangeint` | `min`, `max` | Inclusive int range. |
-| `MinIntValidator` | `int` | `minint` | `min` | Int greater than or equal to `min`. |
-| `MaxIntValidator` | `int` | `maxint` | `max` | Int less than or equal to `max`. |
+| `MinIntValidator` | `int` | `minint` | `min` | Int `>= min`. |
+| `MaxIntValidator` | `int` | `maxint` | `max` | Int `<= max`. |
 | `NonNegativeIntValidator` | `int` | `posint` | - | Int is non-negative. |
 | `NonPositiveIntValidator` | `int` | `negint` | - | Int is non-positive. |
 | `NonZeroIntValidator` | `int` | `!zeroint` (alias: `nonzeroint`) | - | Int is not zero. |
-| `OneOfIntValidator` | `int` | `oneofint` | `values` | Int is in `values` (pipe-separated list). |
+| `OneOfIntValidator` | `int` | `oneofint` | `values` | Int is in `values` (pipe-separated). |
 | **Float64** |  |  |  |  |
 | `Float64RangeValidator` | `float64` | `rangefloat` | `min`, `max` | Inclusive float64 range. |
-| `MinFloat64Validator` | `float64` | `minfloat` | `min` | Float64 greater than or equal to `min`. |
-| `MaxFloat64Validator` | `float64` | `maxfloat` | `max` | Float64 less than or equal to `max`. |
+| `MinFloat64Validator` | `float64` | `minfloat` | `min` | Float64 `>= min`. |
+| `MaxFloat64Validator` | `float64` | `maxfloat` | `max` | Float64 `<= max`. |
 | `NonNegativeFloat64Validator` | `float64` | `posfloat` | - | Float64 is non-negative. |
 | `NonPositiveFloat64Validator` | `float64` | `negfloat` | - | Float64 is non-positive. |
 | `NonZeroFloat64Validator` | `float64` | `!zerofloat` (alias: `nonzerofloat`) | - | Float64 is not zero. |
-| `OneOfFloat64Validator` | `float64` | `oneoffloat` | `values` | Float64 is in `values` (pipe-separated list). |
+| `OneOfFloat64Validator` | `float64` | `oneoffloat` | `values` | Float64 is in `values` (pipe-separated). |
 | **Strings** |  |  |  |  |
-| `UrlValidator` | `string` | `url` | - | Valid URL (absolute). |
+| `UrlValidator` | `string` | `url` | - | Valid absolute URL. |
 | `EmailValidator` | `string` | `email` | - | Valid email address. |
 | `NonEmptyStringValidator` | `string` | `!empty` (alias: `nonempty`) | - | String is not empty. |
-| `MinLengthValidator` | `string` | `min` | `size` | String length >= `size`. |
-| `MaxLengthValidator` | `string` | `max` | `size` | String length <= `size`. |
+| `MinLengthValidator` | `string` | `min` | `size` | String length `>= size`. |
+| `MaxLengthValidator` | `string` | `max` | `size` | String length `<= size`. |
 | `LengthRangeValidator` | `string` | `len` | `min`, `max` | String length in inclusive range. |
 | `RegexValidator` | `string` | `regex` | `pattern` | String matches regex. |
 | `PrefixValidator` | `string` | `prefix` | `value` | String has prefix. |
 | `SuffixValidator` | `string` | `suffix` | `value` | String has suffix. |
 | `ContainsValidator` | `string` | `contains` | `value` | String contains substring. |
-| `OneOfStringValidator` | `string` | `oneof` | `values` | String is in `values` (pipe-separated list). |
+| `OneOfStringValidator` | `string` | `oneof` | `values` | String is in `values` (pipe-separated). |
 | `AlphaNumericValidator` | `string` | `alphanum` | - | String is alphanumeric. |
 | `MACAddressValidator` | `string` | `mac` | - | Valid MAC address. |
 | `IpValidator` | `string` | `ip` | - | Valid IP address. |
@@ -240,7 +229,7 @@ directly.
 | `HexValidator` | `string` | `hex` | - | Valid hex string (optional `0x`). |
 | `XMLValidator` | `string` | `xml` | - | Well-formed XML with at least one element. |
 | `JSONValidator` | `string` | `json` | - | Valid JSON. |
-| `TimeValidator` | `string` | `time` | `format` (`RFC3339`) | Valid time for layout (built-in names or raw layout). |
+| `TimeValidator` | `string` | `time` | `format` (`RFC3339`) | Valid time for layout (built-in name or raw layout). |
 | **Time** |  |  |  |  |
 | `NonZeroTimeValidator` | `time.Time` | `!zerotime` (alias: `nonzerotime`) | - | Time is not zero. |
 | `TimeBeforeValidator` | `time.Time` | `beforetime` | `before` | Time is before the configured time (RFC3339). |
@@ -253,7 +242,7 @@ directly.
 | `NonZeroIPValidator` | `net.IP` | `!zeroip` (alias: `nonzeroip`) | - | IP is not zero or unspecified. |
 | `IPRangeValidator` | `net.IP` | `iprange` | `start`, `end` | IP is within the inclusive range. |
 | **URL** |  |  |  |  |
-| `NonZeroURLValidator` | `url.URL` | `!zerourl` (alias: `nonzerourl`) | - | URL is not zero. |
+| `NonZeroURLValidator` | `url.URL` | `!zerourl` (alias: `nonzerourl`) | - | URL is not the zero value. |
 
 ## License
 

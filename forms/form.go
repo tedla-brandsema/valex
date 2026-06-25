@@ -1,11 +1,3 @@
-// Package forms binds HTTP request values into structs and validates them with
-// the valex engine's "val" tag.
-//
-// It is a separate package from the core valex engine so that programs which
-// only need programmatic or struct-tag validation do not pull in net/http.
-// Form fields are mapped with the "field" struct tag; validation directives use
-// the "val" tag and must be registered with valex.RegisterDirective (for
-// example from the valex/validators subpackage).
 package forms
 
 import (
