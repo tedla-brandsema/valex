@@ -1,4 +1,4 @@
-package valex
+package validators
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tedla-brandsema/tagex"
+	"github.com/tedla-brandsema/valex"
 )
 
 func TestIntRangeValidator(t *testing.T) {
@@ -965,7 +966,7 @@ func (d *evenDirectiveTest) Handle(val int) (int, error) {
 }
 
 func TestRegisterDirective(t *testing.T) {
-	RegisterDirective(&evenDirectiveTest{})
+	valex.RegisterDirective(&evenDirectiveTest{})
 
 	tests := []struct {
 		name      string
@@ -992,7 +993,7 @@ func TestRegisterDirective(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ok, err := ValidateStruct(tt.data)
+			ok, err := valex.ValidateStruct(tt.data)
 			if ok != tt.wantValid {
 				t.Fatalf("expected ok=%v, got ok=%v (err: %v)", tt.wantValid, ok, err)
 			}
@@ -1008,7 +1009,7 @@ func TestRegisterDirective(t *testing.T) {
 func TestValidatedValue(t *testing.T) {
 	t.Run("set and get success", func(t *testing.T) {
 		v := &NonNegativeIntValidator{}
-		val := &ValidatedValue[int]{Validator: v}
+		val := &valex.ValidatedValue[int]{Validator: v}
 		if err := val.Set(10); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -1021,7 +1022,7 @@ func TestValidatedValue(t *testing.T) {
 	})
 
 	t.Run("set with nil validator", func(t *testing.T) {
-		val := &ValidatedValue[int]{}
+		val := &valex.ValidatedValue[int]{}
 		if err := val.Set(1); err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -1029,7 +1030,7 @@ func TestValidatedValue(t *testing.T) {
 
 	t.Run("set with invalid value", func(t *testing.T) {
 		v := &NonPositiveIntValidator{}
-		val := &ValidatedValue[int]{Validator: v}
+		val := &valex.ValidatedValue[int]{Validator: v}
 		err := val.Set(1)
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -1043,7 +1044,7 @@ func TestValidatedValue(t *testing.T) {
 func TestMustValidate(t *testing.T) {
 	t.Run("returns value on success", func(t *testing.T) {
 		v := &NonNegativeIntValidator{}
-		got := MustValidate(5, v)
+		got := valex.MustValidate(5, v)
 		if got != 5 {
 			t.Fatalf("expected 5, got %d", got)
 		}
@@ -1056,7 +1057,7 @@ func TestMustValidate(t *testing.T) {
 				t.Fatal("expected panic, got nil")
 			}
 		}()
-		_ = MustValidate(-1, v)
+		_ = valex.MustValidate(-1, v)
 	})
 }
 
@@ -1234,7 +1235,7 @@ func TestJSONValidator(t *testing.T) {
 func TestCompositeValidator_String(t *testing.T) {
 	nonEmpty := &NonEmptyStringValidator{}
 	minLength := &MinLengthValidator{Size: 3}
-	composite := &CompositeValidator[string]{Validators: []Validator[string]{nonEmpty, minLength}}
+	composite := &CompositeValidator[string]{Validators: []valex.Validator[string]{nonEmpty, minLength}}
 
 	tests := []struct {
 		input string
@@ -1256,7 +1257,7 @@ func TestCompositeValidator_String(t *testing.T) {
 func TestCompositeValidator_Int(t *testing.T) {
 	nonNegative := &NonNegativeIntValidator{}
 	rangeValidator := &IntRangeValidator{Min: 0, Max: 100}
-	composite := &CompositeValidator[int]{Validators: []Validator[int]{nonNegative, rangeValidator}}
+	composite := &CompositeValidator[int]{Validators: []valex.Validator[int]{nonNegative, rangeValidator}}
 
 	tests := []struct {
 		input int

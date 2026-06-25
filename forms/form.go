@@ -1,4 +1,12 @@
-package valex
+// Package forms binds HTTP request values into structs and validates them with
+// the valex engine's "val" tag.
+//
+// It is a separate package from the core valex engine so that programs which
+// only need programmatic or struct-tag validation do not pull in net/http.
+// Form fields are mapped with the "field" struct tag; validation directives use
+// the "val" tag and must be registered with valex.RegisterDirective (for
+// example from the valex/validators subpackage).
+package forms
 
 import (
 	"errors"
@@ -10,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/tedla-brandsema/tagex"
+	"github.com/tedla-brandsema/valex"
 )
 
 type fieldDirective struct {
@@ -19,35 +28,36 @@ type fieldDirective struct {
 	DefaultValue string `param:"default,required=false"`
 }
 
+// ErrFieldRequired is returned when a required form field is missing or empty.
 var ErrFieldRequired = errors.New("field is required")
 
-type FormValidator struct {
-	tags      []*tagex.Tag
+// Validator parses an HTTP request and validates bound structs using the
+// valex "val" tag.
+type Validator struct {
 	rawValues url.Values
 }
 
-// NewFormValidator parses the request and prepares a validator.
+// New parses the request and prepares a Validator.
 // ParseForm handles both POST bodies and URL query parameters, so GET requests
 // with query values are supported.
-func NewFormValidator(r *http.Request) (*FormValidator, error) {
+func New(r *http.Request) (*Validator, error) {
 	if err := r.ParseForm(); err != nil {
 		return nil, err
 	}
-	return &FormValidator{
-			tags: []*tagex.Tag{
-				&tag,
-			},
-			rawValues: r.Form,
-		},
-		nil
+	return &Validator{rawValues: r.Form}, nil
 }
 
-// Validate binds form values into dst and validates "val" tags.
-func (v *FormValidator) Validate(dst any) (bool, error) {
+// Validate binds form values into dst and validates its "val" tags.
+func (v *Validator) Validate(dst any) (bool, error) {
 	if err := bindFormValues(dst, v.rawValues); err != nil {
 		return false, err
 	}
-	return tagex.ProcessStruct(dst, v.tags...)
+	return valex.ValidateStruct(dst)
+}
+
+// Bind binds url.Values into a struct pointer using "field" tags.
+func Bind(dst any, values url.Values) error {
+	return bindFormValues(dst, values)
 }
 
 func bindFormValues(dst any, values url.Values) error {
@@ -56,11 +66,6 @@ func bindFormValues(dst any, values url.Values) error {
 		return err
 	}
 	return bindStructFields(val, values, "")
-}
-
-// BindFormValues binds url.Values into a struct pointer using "field" tags.
-func BindFormValues(dst any, values url.Values) error {
-	return bindFormValues(dst, values)
 }
 
 func pointerStruct(v any) (reflect.Value, error) {

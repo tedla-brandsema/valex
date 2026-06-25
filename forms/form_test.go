@@ -1,4 +1,4 @@
-package valex
+package forms
 
 import (
 	"errors"
@@ -9,12 +9,13 @@ import (
 	"testing"
 
 	"github.com/tedla-brandsema/tagex"
+	_ "github.com/tedla-brandsema/valex/internal/valextest" // registers stub directives
 )
 
 func TestFormValidatorBindAndValidate(t *testing.T) {
 	type Input struct {
-		Name   string   `field:"name, max=1, required=true, default=unused" val:"min,size=3"`
-		Age    int      `field:"age, max=1, required=true, default=0" val:"rangeint,min=0,max=120"`
+		Name   string   `field:"name, max=1, required=true, default=unused" val:"minlen,size=3"`
+		Age    int      `field:"age, max=1, required=true, default=0" val:"intrange,min=0,max=120"`
 		Active bool     `field:"active, max=1, required=false, default=false"`
 		Score  float64  `field:"score, max=1, required=false, default=0"`
 		Tags   []string `field:"tags, max=2, required=false, default=unused"`
@@ -33,9 +34,9 @@ func TestFormValidatorBindAndValidate(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -66,9 +67,9 @@ func TestFormValidatorRequiredMissing(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", nil)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -89,9 +90,9 @@ func TestFormValidatorDefaultValue(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", nil)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -114,9 +115,9 @@ func TestFormValidatorConversionError(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -137,9 +138,9 @@ func TestFormValidatorDefaultsRequiredFalse(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", nil)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -163,9 +164,9 @@ func TestFormValidatorDefaultsMaxOne(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -192,9 +193,9 @@ func TestFormValidatorDefaultNonStringTypes(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", nil)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -229,9 +230,9 @@ func TestFormValidatorRequiredEmptyValue(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -254,9 +255,9 @@ func TestFormValidatorMaxInvalid(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -278,9 +279,9 @@ func TestFormValidatorPointerMissingOptional(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", nil)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -304,9 +305,9 @@ func TestFormValidatorSliceConversionError(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -332,9 +333,9 @@ func TestFormValidatorNestedErrorPath(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Outer
@@ -357,9 +358,9 @@ func TestFormValidatorUnsupportedKind(t *testing.T) {
 	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	validator, err := NewFormValidator(req)
+	validator, err := New(req)
 	if err != nil {
-		t.Fatalf("NewFormValidator error: %v", err)
+		t.Fatalf("New error: %v", err)
 	}
 
 	var input Input
@@ -383,8 +384,8 @@ func TestBindFormValues(t *testing.T) {
 	values.Set("age", "29")
 
 	var input Input
-	if err := BindFormValues(&input, values); err != nil {
-		t.Fatalf("BindFormValues error: %v", err)
+	if err := Bind(&input, values); err != nil {
+		t.Fatalf("Bind error: %v", err)
 	}
 	if input.Name != "Alice" || input.Age != 29 {
 		t.Fatalf("unexpected bound values: %+v", input)
@@ -393,7 +394,7 @@ func TestBindFormValues(t *testing.T) {
 
 func TestValidateFormSuccess(t *testing.T) {
 	type Input struct {
-		Name string `field:"name" val:"min,size=3"`
+		Name string `field:"name" val:"minlen,size=3"`
 	}
 
 	values := url.Values{}
@@ -402,7 +403,7 @@ func TestValidateFormSuccess(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	var input Input
-	ok, err := ValidateForm(req, &input)
+	ok, err := Validate(req, &input)
 	if !ok || err != nil {
 		t.Fatalf("expected success, got ok=%v err=%v", ok, err)
 	}
@@ -419,13 +420,13 @@ func TestValidateFormStatusBadRequest(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	var input Input
-	ok, err := ValidateForm(req, &input)
+	ok, err := Validate(req, &input)
 	if ok || err == nil {
 		t.Fatalf("expected validation error, got ok=%v err=%v", ok, err)
 	}
-	var formErr *FormError
+	var formErr *Error
 	if !errors.As(err, &formErr) {
-		t.Fatalf("expected FormError, got %v", err)
+		t.Fatalf("expected Error, got %v", err)
 	}
 	if formErr.StatusCode() != http.StatusBadRequest {
 		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, formErr.StatusCode())
@@ -441,13 +442,13 @@ func TestValidateFormStatusMissingRequired(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	var input Input
-	ok, err := ValidateForm(req, &input)
+	ok, err := Validate(req, &input)
 	if ok || err == nil {
 		t.Fatalf("expected validation error, got ok=%v err=%v", ok, err)
 	}
-	var formErr *FormError
+	var formErr *Error
 	if !errors.As(err, &formErr) {
-		t.Fatalf("expected FormError, got %v", err)
+		t.Fatalf("expected Error, got %v", err)
 	}
 	if formErr.StatusCode() != http.StatusUnprocessableEntity {
 		t.Fatalf("expected status %d, got %d", http.StatusUnprocessableEntity, formErr.StatusCode())
@@ -456,7 +457,7 @@ func TestValidateFormStatusMissingRequired(t *testing.T) {
 
 func TestValidateFormStatusUnprocessable(t *testing.T) {
 	type Input struct {
-		Name string `field:"name" val:"min,size=3"`
+		Name string `field:"name" val:"minlen,size=3"`
 	}
 
 	values := url.Values{}
@@ -465,13 +466,13 @@ func TestValidateFormStatusUnprocessable(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	var input Input
-	ok, err := ValidateForm(req, &input)
+	ok, err := Validate(req, &input)
 	if ok || err == nil {
 		t.Fatalf("expected validation error, got ok=%v err=%v", ok, err)
 	}
-	var formErr *FormError
+	var formErr *Error
 	if !errors.As(err, &formErr) {
-		t.Fatalf("expected FormError, got %v", err)
+		t.Fatalf("expected Error, got %v", err)
 	}
 	if formErr.StatusCode() != http.StatusUnprocessableEntity {
 		t.Fatalf("expected status %d, got %d", http.StatusUnprocessableEntity, formErr.StatusCode())
@@ -487,13 +488,13 @@ func TestValidateFormParseError(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	var input Input
-	ok, err := ValidateForm(req, &input)
+	ok, err := Validate(req, &input)
 	if ok || err == nil {
 		t.Fatalf("expected parse error, got ok=%v err=%v", ok, err)
 	}
-	var formErr *FormError
+	var formErr *Error
 	if !errors.As(err, &formErr) {
-		t.Fatalf("expected FormError, got %v", err)
+		t.Fatalf("expected Error, got %v", err)
 	}
 	if formErr.StatusCode() != http.StatusBadRequest {
 		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, formErr.StatusCode())

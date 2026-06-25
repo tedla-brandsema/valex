@@ -1,4 +1,4 @@
-package valex
+package validators
 
 import (
 	"bytes"
@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/tedla-brandsema/tagex"
+	"github.com/tedla-brandsema/valex"
 )
 
 // CmpRangeValidator validates that a value is within an inclusive range.
@@ -1808,7 +1809,7 @@ func normalizeIP(ip net.IP) net.IP {
 
 // CompositeValidator validates a value by running multiple validators in order.
 type CompositeValidator[T cmp.Ordered] struct {
-	Validators []Validator[T]
+	Validators []valex.Validator[T]
 }
 
 // Validate checks the value against each validator in order.

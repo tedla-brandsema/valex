@@ -1,4 +1,4 @@
-package valex
+package validators
 
 import (
 	"net"
@@ -6,7 +6,72 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/tedla-brandsema/valex"
 )
+
+func init() {
+
+	// Int directives
+	valex.RegisterDirective(&IntRangeValidator{})
+	valex.RegisterDirective(&NonNegativeIntValidator{})
+	valex.RegisterDirective(&NonPositiveIntValidator{})
+	valex.RegisterDirective(&MinIntValidator{})
+	valex.RegisterDirective(&MaxIntValidator{})
+	valex.RegisterDirective(&NonZeroIntValidator{})
+	valex.RegisterDirective(&NonZeroIntAliasValidator{})
+	valex.RegisterDirective(&OneOfIntValidator{})
+
+	// Float64 directives
+	valex.RegisterDirective(&Float64RangeValidator{})
+	valex.RegisterDirective(&NonNegativeFloat64Validator{})
+	valex.RegisterDirective(&NonPositiveFloat64Validator{})
+	valex.RegisterDirective(&MinFloat64Validator{})
+	valex.RegisterDirective(&MaxFloat64Validator{})
+	valex.RegisterDirective(&NonZeroFloat64Validator{})
+	valex.RegisterDirective(&NonZeroFloat64AliasValidator{})
+	valex.RegisterDirective(&OneOfFloat64Validator{})
+
+	// String directives
+	valex.RegisterDirective(&UrlValidator{})
+	valex.RegisterDirective(&EmailValidator{})
+	valex.RegisterDirective(&NonEmptyStringValidator{})
+	valex.RegisterDirective(&NonEmptyStringAliasValidator{})
+	valex.RegisterDirective(&NonZeroTimeValidator{})
+	valex.RegisterDirective(&NonZeroTimeAliasValidator{})
+	valex.RegisterDirective(&TimeBeforeValidator{})
+	valex.RegisterDirective(&TimeAfterValidator{})
+	valex.RegisterDirective(&TimeBetweenValidator{})
+	valex.RegisterDirective(&PositiveDurationValidator{})
+	valex.RegisterDirective(&NonZeroDurationValidator{})
+	valex.RegisterDirective(&NonZeroDurationAliasValidator{})
+	valex.RegisterDirective(&NonZeroIPValidator{})
+	valex.RegisterDirective(&NonZeroIPAliasValidator{})
+	valex.RegisterDirective(&IPRangeValidator{})
+	valex.RegisterDirective(&NonZeroURLValidator{})
+	valex.RegisterDirective(&NonZeroURLAliasValidator{})
+	valex.RegisterDirective(&MinLengthValidator{})
+	valex.RegisterDirective(&MaxLengthValidator{})
+	valex.RegisterDirective(&LengthRangeValidator{})
+	valex.RegisterDirective(&RegexValidator{})
+	valex.RegisterDirective(&PrefixValidator{})
+	valex.RegisterDirective(&SuffixValidator{})
+	valex.RegisterDirective(&ContainsValidator{})
+	valex.RegisterDirective(&OneOfStringValidator{})
+	valex.RegisterDirective(&AlphaNumericValidator{})
+	valex.RegisterDirective(&MACAddressValidator{})
+	valex.RegisterDirective(&IpValidator{})
+	valex.RegisterDirective(&IPv4Validator{})
+	valex.RegisterDirective(&IPv6Validator{})
+	valex.RegisterDirective(&HostnameValidator{})
+	valex.RegisterDirective(&IPCIDRValidator{})
+	valex.RegisterDirective(&XMLValidator{})
+	valex.RegisterDirective(&JSONValidator{})
+	valex.RegisterDirective(&UUIDValidator{})
+	valex.RegisterDirective(&Base64Validator{})
+	valex.RegisterDirective(&HexValidator{})
+	valex.RegisterDirective(&TimeValidator{})
+}
 
 func TestValidateStruct_int(t *testing.T) {
 	tests := []struct {
@@ -43,7 +108,7 @@ func TestValidateStruct_int(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			valid, err := ValidateStruct(tc.data)
+			valid, err := valex.ValidateStruct(tc.data)
 			if valid != tc.wantValid {
 				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
 			}
@@ -121,7 +186,7 @@ func TestValidateStruct_string(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			valid, err := ValidateStruct(tc.data)
+			valid, err := valex.ValidateStruct(tc.data)
 			if valid != tc.wantValid {
 				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
 			}
@@ -175,7 +240,7 @@ func TestValidateStruct_float64(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			valid, err := ValidateStruct(tc.data)
+			valid, err := valex.ValidateStruct(tc.data)
 			if valid != tc.wantValid {
 				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
 			}
@@ -297,7 +362,7 @@ func TestValidateStruct_timeDurationIPURL(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			valid, err := ValidateStruct(tc.data)
+			valid, err := valex.ValidateStruct(tc.data)
 			if valid != tc.wantValid {
 				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
 			}
