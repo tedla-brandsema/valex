@@ -2,7 +2,6 @@ package valex
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 )
 
@@ -28,7 +27,7 @@ type ValidatedValue[T cmp.Ordered] struct {
 // Set validates and stores the value.
 func (v *ValidatedValue[T]) Set(val T) error {
 	if v.Validator == nil {
-		return errors.New("no validator set")
+		return ErrNoValidator
 	}
 	if ok, err := v.Validator.Validate(val); !ok {
 		return err

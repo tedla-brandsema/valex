@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/tedla-brandsema/tagex"
+	"github.com/tedla-brandsema/valex"
 )
 
 // Error wraps a validation error with an HTTP status code.
@@ -40,7 +40,7 @@ func Status(err error) int {
 	if err == nil {
 		return http.StatusOK
 	}
-	var tagErr *tagex.TagError
+	var tagErr *valex.TagError
 	if errors.As(err, &tagErr) {
 		return http.StatusUnprocessableEntity
 	}

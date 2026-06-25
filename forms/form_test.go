@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tedla-brandsema/tagex"
+	"github.com/tedla-brandsema/valex"
 	_ "github.com/tedla-brandsema/valex/internal/stub" // registers stub directives
 )
 
@@ -265,7 +265,7 @@ func TestFormValidatorMaxInvalid(t *testing.T) {
 	if ok || err == nil {
 		t.Fatalf("expected max error, got ok=%v err=%v", ok, err)
 	}
-	var convErr *tagex.ConversionError
+	var convErr *valex.ConversionError
 	if !errors.As(err, &convErr) {
 		t.Fatalf("expected conversion error, got %v", err)
 	}
