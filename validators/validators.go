@@ -31,7 +31,7 @@ type CmpRangeValidator[T cmp.Ordered] struct {
 }
 
 // Validate checks whether the value is within the configured range.
-func (v *CmpRangeValidator[T]) Validate(val T) (ok bool, err error) {
+func (v *CmpRangeValidator[T]) Validate(val T) error {
 	return validateRange(val, v.Min, v.Max, "value %v is out of range [%v, %v]")
 }
 
@@ -39,63 +39,63 @@ func (v *CmpRangeValidator[T]) Validate(val T) (ok bool, err error) {
 type NonZeroValidator[T any] struct{}
 
 // Validate checks whether the value is non-zero.
-func (v *NonZeroValidator[T]) Validate(val T) (ok bool, err error) {
+func (v *NonZeroValidator[T]) Validate(val T) error {
 	rv := reflect.ValueOf(val)
 	if !rv.IsValid() || rv.IsZero() {
-		return false, fmt.Errorf("value is zero")
+		return fmt.Errorf("value is zero")
 	}
-	return true, nil
+	return nil
 }
 
-func validateNonZero[T any](val T) (ok bool, err error) {
+func validateNonZero[T any](val T) error {
 	return (&NonZeroValidator[T]{}).Validate(val)
 }
 
-func validateRange[T cmp.Ordered](val, min, max T, format string) (ok bool, err error) {
+func validateRange[T cmp.Ordered](val, min, max T, format string) error {
 	if cmp.Less(val, min) || cmp.Less(max, val) {
-		return false, fmt.Errorf(format, val, min, max)
+		return fmt.Errorf(format, val, min, max)
 	}
-	return true, nil
+	return nil
 }
 
-func validateMin[T cmp.Ordered](val, min T, format string) (ok bool, err error) {
+func validateMin[T cmp.Ordered](val, min T, format string) error {
 	if cmp.Less(val, min) {
-		return false, fmt.Errorf(format, val, min)
+		return fmt.Errorf(format, val, min)
 	}
-	return true, nil
+	return nil
 }
 
-func validateMax[T cmp.Ordered](val, max T, format string) (ok bool, err error) {
+func validateMax[T cmp.Ordered](val, max T, format string) error {
 	if cmp.Less(max, val) {
-		return false, fmt.Errorf(format, val, max)
+		return fmt.Errorf(format, val, max)
 	}
-	return true, nil
+	return nil
 }
 
-func validateNonNegative[T cmp.Ordered](val T, format string) (ok bool, err error) {
+func validateNonNegative[T cmp.Ordered](val T, format string) error {
 	var zero T
 	if cmp.Less(val, zero) {
-		return false, fmt.Errorf(format, val)
+		return fmt.Errorf(format, val)
 	}
-	return true, nil
+	return nil
 }
 
-func validateNonPositive[T cmp.Ordered](val T, format string) (ok bool, err error) {
+func validateNonPositive[T cmp.Ordered](val T, format string) error {
 	var zero T
 	if cmp.Less(zero, val) {
-		return false, fmt.Errorf(format, val)
+		return fmt.Errorf(format, val)
 	}
-	return true, nil
+	return nil
 }
 
-func validateOneOf[T comparable](val T, values []T, emptyErr error, format string) (ok bool, err error) {
+func validateOneOf[T comparable](val T, values []T, emptyErr error, format string) error {
 	if len(values) == 0 {
-		return false, emptyErr
+		return emptyErr
 	}
 	if slices.Contains(values, val) {
-		return true, nil
+		return nil
 	}
-	return false, fmt.Errorf(format, val)
+	return fmt.Errorf(format, val)
 }
 
 // IntRangeValidator validates that an int is within an inclusive range.
@@ -105,7 +105,7 @@ type IntRangeValidator struct {
 }
 
 // Validate checks whether the value is within the configured range.
-func (v *IntRangeValidator) Validate(val int) (ok bool, err error) {
+func (v *IntRangeValidator) Validate(val int) error {
 	return validateRange(val, v.Min, v.Max, "value %d is out of range [%d, %d]")
 }
 
@@ -121,7 +121,7 @@ func (v *IntRangeValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *IntRangeValidator) Handle(val int) (int, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -132,7 +132,7 @@ type Float64RangeValidator struct {
 }
 
 // Validate checks whether the value is within the configured range.
-func (v *Float64RangeValidator) Validate(val float64) (ok bool, err error) {
+func (v *Float64RangeValidator) Validate(val float64) error {
 	return validateRange(val, v.Min, v.Max, "value %g is out of range [%g, %g]")
 }
 
@@ -148,7 +148,7 @@ func (v *Float64RangeValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *Float64RangeValidator) Handle(val float64) (float64, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -156,7 +156,7 @@ func (v *Float64RangeValidator) Handle(val float64) (float64, error) {
 type NonNegativeIntValidator struct{}
 
 // Validate checks whether the value is non-negative.
-func (v *NonNegativeIntValidator) Validate(val int) (ok bool, err error) {
+func (v *NonNegativeIntValidator) Validate(val int) error {
 	return validateNonNegative(val, "value %d is a negative integer")
 }
 
@@ -172,7 +172,7 @@ func (v *NonNegativeIntValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonNegativeIntValidator) Handle(val int) (int, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -180,7 +180,7 @@ func (v *NonNegativeIntValidator) Handle(val int) (int, error) {
 type NonNegativeFloat64Validator struct{}
 
 // Validate checks whether the value is non-negative.
-func (v *NonNegativeFloat64Validator) Validate(val float64) (ok bool, err error) {
+func (v *NonNegativeFloat64Validator) Validate(val float64) error {
 	return validateNonNegative(val, "value %g is a negative float")
 }
 
@@ -196,7 +196,7 @@ func (v *NonNegativeFloat64Validator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonNegativeFloat64Validator) Handle(val float64) (float64, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -204,7 +204,7 @@ func (v *NonNegativeFloat64Validator) Handle(val float64) (float64, error) {
 type NonPositiveIntValidator struct{}
 
 // Validate checks whether the value is non-positive.
-func (v *NonPositiveIntValidator) Validate(val int) (ok bool, err error) {
+func (v *NonPositiveIntValidator) Validate(val int) error {
 	return validateNonPositive(val, "value %d is a positive integer")
 }
 
@@ -220,7 +220,7 @@ func (v *NonPositiveIntValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonPositiveIntValidator) Handle(val int) (int, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -228,7 +228,7 @@ func (v *NonPositiveIntValidator) Handle(val int) (int, error) {
 type NonPositiveFloat64Validator struct{}
 
 // Validate checks whether the value is non-positive.
-func (v *NonPositiveFloat64Validator) Validate(val float64) (ok bool, err error) {
+func (v *NonPositiveFloat64Validator) Validate(val float64) error {
 	return validateNonPositive(val, "value %g is a positive float")
 }
 
@@ -244,7 +244,7 @@ func (v *NonPositiveFloat64Validator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonPositiveFloat64Validator) Handle(val float64) (float64, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -252,12 +252,9 @@ func (v *NonPositiveFloat64Validator) Handle(val float64) (float64, error) {
 type UrlValidator struct{}
 
 // Validate checks whether the value is a valid URL.
-func (v *UrlValidator) Validate(val string) (ok bool, err error) {
-	_, err = url.ParseRequestURI(val)
-	if err == nil {
-		ok = true
-	}
-	return
+func (v *UrlValidator) Validate(val string) error {
+	_, err := url.ParseRequestURI(val)
+	return err
 }
 
 // Name returns the directive identifier.
@@ -272,7 +269,7 @@ func (v *UrlValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *UrlValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -280,12 +277,9 @@ func (v *UrlValidator) Handle(val string) (string, error) {
 type EmailValidator struct{}
 
 // Validate checks whether the value is a valid email address.
-func (v *EmailValidator) Validate(val string) (ok bool, err error) {
-	_, err = mail.ParseAddress(val)
-	if err == nil {
-		ok = true
-	}
-	return
+func (v *EmailValidator) Validate(val string) error {
+	_, err := mail.ParseAddress(val)
+	return err
 }
 
 // Name returns the directive identifier.
@@ -300,7 +294,7 @@ func (v *EmailValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *EmailValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -308,13 +302,11 @@ func (v *EmailValidator) Handle(val string) (string, error) {
 type NonEmptyStringValidator struct{}
 
 // Validate checks whether the value is non-empty.
-func (v *NonEmptyStringValidator) Validate(val string) (ok bool, err error) {
-	if ok, err := validateNonZero(val); !ok {
-		return false, fmt.Errorf("string is empty")
-	} else if err != nil {
-		return false, err
+func (v *NonEmptyStringValidator) Validate(val string) error {
+	if err := validateNonZero(val); err != nil {
+		return fmt.Errorf("string is empty")
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -329,7 +321,7 @@ func (v *NonEmptyStringValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonEmptyStringValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -349,17 +341,17 @@ type MinLengthValidator struct {
 }
 
 // Validate checks whether the value meets the minimum length.
-func (v *MinLengthValidator) Validate(val string) (ok bool, err error) {
+func (v *MinLengthValidator) Validate(val string) error {
 	if v.Size == 0 {
-		return false, errors.New(`value of parameter "size" cannot be 0`)
+		return errors.New(`value of parameter "size" cannot be 0`)
 	}
 	if v.Size < 0 {
-		return false, errors.New(`value of parameter "size" cannot be negative`)
+		return errors.New(`value of parameter "size" cannot be negative`)
 	}
 	if len(val) < v.Size {
-		return false, fmt.Errorf("value %s is shorter than minimum length %d", val, v.Size)
+		return fmt.Errorf("value %s is shorter than minimum length %d", val, v.Size)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -374,7 +366,7 @@ func (v *MinLengthValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *MinLengthValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -384,17 +376,17 @@ type MaxLengthValidator struct {
 }
 
 // Validate checks whether the value does not exceed the maximum length.
-func (v *MaxLengthValidator) Validate(val string) (ok bool, err error) {
+func (v *MaxLengthValidator) Validate(val string) error {
 	if v.Size == 0 {
-		return false, errors.New(`value of parameter "size" cannot be 0`)
+		return errors.New(`value of parameter "size" cannot be 0`)
 	}
 	if v.Size < 0 {
-		return false, errors.New(`value of parameter "size" cannot be negative`)
+		return errors.New(`value of parameter "size" cannot be negative`)
 	}
 	if len(val) > v.Size {
-		return false, fmt.Errorf("value %s exceeds maximum length %d", val, v.Size)
+		return fmt.Errorf("value %s exceeds maximum length %d", val, v.Size)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -409,7 +401,7 @@ func (v *MaxLengthValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *MaxLengthValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -420,24 +412,24 @@ type LengthRangeValidator struct {
 }
 
 // Validate checks whether the value length is within the configured range.
-func (v *LengthRangeValidator) Validate(val string) (ok bool, err error) {
+func (v *LengthRangeValidator) Validate(val string) error {
 	l := len(val)
 	if v.Min == 0 {
-		return false, errors.New(`"min" value cannot be 0`)
+		return errors.New(`"min" value cannot be 0`)
 	}
 	if v.Max == 0 {
-		return false, errors.New(`"max" value cannot be 0`)
+		return errors.New(`"max" value cannot be 0`)
 	}
 	if v.Min < 0 || v.Max < 0 {
-		return false, errors.New(`"min" and "max" cannot be negative`)
+		return errors.New(`"min" and "max" cannot be negative`)
 	}
 	if v.Min > v.Max {
-		return false, errors.New(`"min" cannot exceed "max"`)
+		return errors.New(`"min" cannot exceed "max"`)
 	}
 	if l < v.Min || l > v.Max {
-		return false, fmt.Errorf("value %q with length %d is not in range [%d, %d]", val, l, v.Min, v.Max)
+		return fmt.Errorf("value %q with length %d is not in range [%d, %d]", val, l, v.Min, v.Max)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -452,7 +444,7 @@ func (v *LengthRangeValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *LengthRangeValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -462,14 +454,14 @@ type RegexValidator struct {
 }
 
 // Validate checks whether the value matches the configured pattern.
-func (v *RegexValidator) Validate(val string) (ok bool, err error) {
+func (v *RegexValidator) Validate(val string) error {
 	if v.Pattern == nil {
-		return false, errors.New("regex pattern not set")
+		return errors.New("regex pattern not set")
 	}
 	if !v.Pattern.MatchString(val) {
-		return false, fmt.Errorf("value %q does not match pattern %q", val, v.Pattern.String())
+		return fmt.Errorf("value %q does not match pattern %q", val, v.Pattern.String())
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -497,7 +489,7 @@ func (v *RegexValidator) ConvertParam(field reflect.StructField, fieldValue refl
 
 // Handle validates the value and returns it unchanged.
 func (v *RegexValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -505,15 +497,15 @@ func (v *RegexValidator) Handle(val string) (string, error) {
 type AlphaNumericValidator struct{}
 
 // Validate checks whether the value is alphanumeric.
-func (v *AlphaNumericValidator) Validate(val string) (ok bool, err error) {
+func (v *AlphaNumericValidator) Validate(val string) error {
 	matched, err := regexp.MatchString(`^[a-zA-Z0-9]+$`, val)
 	if err != nil {
-		return false, err
+		return err
 	}
 	if !matched {
-		return false, fmt.Errorf("value %q is not alphanumeric", val)
+		return fmt.Errorf("value %q is not alphanumeric", val)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -528,7 +520,7 @@ func (v *AlphaNumericValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *AlphaNumericValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -536,12 +528,12 @@ func (v *AlphaNumericValidator) Handle(val string) (string, error) {
 type MACAddressValidator struct{}
 
 // Validate checks whether the value is a valid MAC address.
-func (v *MACAddressValidator) Validate(val string) (ok bool, err error) {
-	_, err = net.ParseMAC(val)
+func (v *MACAddressValidator) Validate(val string) error {
+	_, err := net.ParseMAC(val)
 	if err != nil {
-		return false, fmt.Errorf("invalid MAC address %q: %v", val, err)
+		return fmt.Errorf("invalid MAC address %q: %v", val, err)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -556,7 +548,7 @@ func (v *MACAddressValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *MACAddressValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -564,11 +556,11 @@ func (v *MACAddressValidator) Handle(val string) (string, error) {
 type IpValidator struct{}
 
 // Validate checks whether the value is a valid IP address.
-func (v *IpValidator) Validate(val string) (ok bool, err error) {
+func (v *IpValidator) Validate(val string) error {
 	if ip := net.ParseIP(val); ip == nil {
-		return false, fmt.Errorf("invalid IP address %q", val)
+		return fmt.Errorf("invalid IP address %q", val)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -583,7 +575,7 @@ func (v *IpValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *IpValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -591,12 +583,12 @@ func (v *IpValidator) Handle(val string) (string, error) {
 type IPv4Validator struct{}
 
 // Validate checks whether the value is a valid IPv4 address.
-func (v *IPv4Validator) Validate(val string) (ok bool, err error) {
+func (v *IPv4Validator) Validate(val string) error {
 	ip := net.ParseIP(val)
 	if ip == nil || ip.To4() == nil {
-		return false, fmt.Errorf("invalid IPv4 address %q", val)
+		return fmt.Errorf("invalid IPv4 address %q", val)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -611,7 +603,7 @@ func (v *IPv4Validator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *IPv4Validator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -619,12 +611,12 @@ func (v *IPv4Validator) Handle(val string) (string, error) {
 type IPv6Validator struct{}
 
 // Validate checks whether the value is a valid IPv6 address.
-func (v *IPv6Validator) Validate(val string) (ok bool, err error) {
+func (v *IPv6Validator) Validate(val string) error {
 	ip := net.ParseIP(val)
 	if ip == nil || ip.To4() != nil {
-		return false, fmt.Errorf("invalid IPv6 address %q", val)
+		return fmt.Errorf("invalid IPv6 address %q", val)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -639,7 +631,7 @@ func (v *IPv6Validator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *IPv6Validator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -647,7 +639,7 @@ func (v *IPv6Validator) Handle(val string) (string, error) {
 type XMLValidator struct{}
 
 // Validate checks whether the value is valid XML with at least one element.
-func (v *XMLValidator) Validate(val string) (ok bool, err error) {
+func (v *XMLValidator) Validate(val string) error {
 	decoder := xml.NewDecoder(strings.NewReader(val))
 	var hasElement bool
 
@@ -657,7 +649,7 @@ func (v *XMLValidator) Validate(val string) (ok bool, err error) {
 			if err == io.EOF {
 				break
 			}
-			return false, fmt.Errorf("XML parsing error: %w", err)
+			return fmt.Errorf("XML parsing error: %w", err)
 		}
 
 		if _, ok := tok.(xml.StartElement); ok { // at least one tag
@@ -666,10 +658,10 @@ func (v *XMLValidator) Validate(val string) (ok bool, err error) {
 	}
 
 	if !hasElement {
-		return false, fmt.Errorf("XML document must contain at least one element")
+		return fmt.Errorf("XML document must contain at least one element")
 	}
 
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -684,7 +676,7 @@ func (v *XMLValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *XMLValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -692,11 +684,11 @@ func (v *XMLValidator) Handle(val string) (string, error) {
 type JSONValidator struct{}
 
 // Validate checks whether the value is valid JSON.
-func (v *JSONValidator) Validate(val string) (ok bool, err error) {
+func (v *JSONValidator) Validate(val string) error {
 	if !json.Valid([]byte(val)) {
-		return false, fmt.Errorf("invalid JSON")
+		return fmt.Errorf("invalid JSON")
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -711,7 +703,7 @@ func (v *JSONValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *JSONValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -721,7 +713,7 @@ type MinIntValidator struct {
 }
 
 // Validate checks whether the value meets the minimum.
-func (v *MinIntValidator) Validate(val int) (ok bool, err error) {
+func (v *MinIntValidator) Validate(val int) error {
 	return validateMin(val, v.Min, "value %d is less than minimum %d")
 }
 
@@ -737,7 +729,7 @@ func (v *MinIntValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *MinIntValidator) Handle(val int) (int, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -747,7 +739,7 @@ type MinFloat64Validator struct {
 }
 
 // Validate checks whether the value meets the minimum.
-func (v *MinFloat64Validator) Validate(val float64) (ok bool, err error) {
+func (v *MinFloat64Validator) Validate(val float64) error {
 	return validateMin(val, v.Min, "value %g is less than minimum %g")
 }
 
@@ -763,7 +755,7 @@ func (v *MinFloat64Validator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *MinFloat64Validator) Handle(val float64) (float64, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -773,7 +765,7 @@ type MaxIntValidator struct {
 }
 
 // Validate checks whether the value meets the maximum.
-func (v *MaxIntValidator) Validate(val int) (ok bool, err error) {
+func (v *MaxIntValidator) Validate(val int) error {
 	return validateMax(val, v.Max, "value %d exceeds maximum %d")
 }
 
@@ -789,7 +781,7 @@ func (v *MaxIntValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *MaxIntValidator) Handle(val int) (int, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -799,7 +791,7 @@ type MaxFloat64Validator struct {
 }
 
 // Validate checks whether the value meets the maximum.
-func (v *MaxFloat64Validator) Validate(val float64) (ok bool, err error) {
+func (v *MaxFloat64Validator) Validate(val float64) error {
 	return validateMax(val, v.Max, "value %g exceeds maximum %g")
 }
 
@@ -815,7 +807,7 @@ func (v *MaxFloat64Validator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *MaxFloat64Validator) Handle(val float64) (float64, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -823,7 +815,7 @@ func (v *MaxFloat64Validator) Handle(val float64) (float64, error) {
 type NonZeroIntValidator struct{}
 
 // Validate checks whether the value is non-zero.
-func (v *NonZeroIntValidator) Validate(val int) (ok bool, err error) {
+func (v *NonZeroIntValidator) Validate(val int) error {
 	return validateNonZero(val)
 }
 
@@ -839,7 +831,7 @@ func (v *NonZeroIntValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonZeroIntValidator) Handle(val int) (int, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -847,7 +839,7 @@ func (v *NonZeroIntValidator) Handle(val int) (int, error) {
 type NonZeroFloat64Validator struct{}
 
 // Validate checks whether the value is non-zero.
-func (v *NonZeroFloat64Validator) Validate(val float64) (ok bool, err error) {
+func (v *NonZeroFloat64Validator) Validate(val float64) error {
 	return validateNonZero(val)
 }
 
@@ -863,7 +855,7 @@ func (v *NonZeroFloat64Validator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonZeroFloat64Validator) Handle(val float64) (float64, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -891,11 +883,11 @@ func (v *NonZeroIntAliasValidator) Name() string {
 type NonZeroTimeValidator struct{}
 
 // Validate checks whether the value is non-zero.
-func (v *NonZeroTimeValidator) Validate(val time.Time) (ok bool, err error) {
+func (v *NonZeroTimeValidator) Validate(val time.Time) error {
 	if val.IsZero() {
-		return false, fmt.Errorf("time is zero")
+		return fmt.Errorf("time is zero")
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -910,7 +902,7 @@ func (v *NonZeroTimeValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonZeroTimeValidator) Handle(val time.Time) (time.Time, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -930,14 +922,14 @@ type TimeBeforeValidator struct {
 }
 
 // Validate checks whether the value is before the configured time.
-func (v *TimeBeforeValidator) Validate(val time.Time) (ok bool, err error) {
+func (v *TimeBeforeValidator) Validate(val time.Time) error {
 	if v.Before.IsZero() {
-		return false, errors.New(`"before" time not set`)
+		return errors.New(`"before" time not set`)
 	}
 	if !val.Before(v.Before) {
-		return false, fmt.Errorf("time %v is not before %v", val, v.Before)
+		return fmt.Errorf("time %v is not before %v", val, v.Before)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -965,7 +957,7 @@ func (v *TimeBeforeValidator) ConvertParam(field reflect.StructField, fieldValue
 
 // Handle validates the value and returns it unchanged.
 func (v *TimeBeforeValidator) Handle(val time.Time) (time.Time, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -975,14 +967,14 @@ type TimeAfterValidator struct {
 }
 
 // Validate checks whether the value is after the configured time.
-func (v *TimeAfterValidator) Validate(val time.Time) (ok bool, err error) {
+func (v *TimeAfterValidator) Validate(val time.Time) error {
 	if v.After.IsZero() {
-		return false, errors.New(`"after" time not set`)
+		return errors.New(`"after" time not set`)
 	}
 	if !val.After(v.After) {
-		return false, fmt.Errorf("time %v is not after %v", val, v.After)
+		return fmt.Errorf("time %v is not after %v", val, v.After)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1010,7 +1002,7 @@ func (v *TimeAfterValidator) ConvertParam(field reflect.StructField, fieldValue 
 
 // Handle validates the value and returns it unchanged.
 func (v *TimeAfterValidator) Handle(val time.Time) (time.Time, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1021,17 +1013,17 @@ type TimeBetweenValidator struct {
 }
 
 // Validate checks whether the value is within the configured range.
-func (v *TimeBetweenValidator) Validate(val time.Time) (ok bool, err error) {
+func (v *TimeBetweenValidator) Validate(val time.Time) error {
 	if v.Start.IsZero() || v.End.IsZero() {
-		return false, errors.New(`"start" and "end" times must be set`)
+		return errors.New(`"start" and "end" times must be set`)
 	}
 	if v.Start.After(v.End) {
-		return false, errors.New(`"start" time cannot be after "end" time`)
+		return errors.New(`"start" time cannot be after "end" time`)
 	}
 	if val.Before(v.Start) || val.After(v.End) {
-		return false, fmt.Errorf("time %v is not in range [%v, %v]", val, v.Start, v.End)
+		return fmt.Errorf("time %v is not in range [%v, %v]", val, v.Start, v.End)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1059,7 +1051,7 @@ func (v *TimeBetweenValidator) ConvertParam(field reflect.StructField, fieldValu
 
 // Handle validates the value and returns it unchanged.
 func (v *TimeBetweenValidator) Handle(val time.Time) (time.Time, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1067,11 +1059,11 @@ func (v *TimeBetweenValidator) Handle(val time.Time) (time.Time, error) {
 type PositiveDurationValidator struct{}
 
 // Validate checks whether the value is positive.
-func (v *PositiveDurationValidator) Validate(val time.Duration) (ok bool, err error) {
+func (v *PositiveDurationValidator) Validate(val time.Duration) error {
 	if val <= 0 {
-		return false, fmt.Errorf("duration is not positive")
+		return fmt.Errorf("duration is not positive")
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1086,7 +1078,7 @@ func (v *PositiveDurationValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *PositiveDurationValidator) Handle(val time.Duration) (time.Duration, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1094,13 +1086,11 @@ func (v *PositiveDurationValidator) Handle(val time.Duration) (time.Duration, er
 type NonZeroDurationValidator struct{}
 
 // Validate checks whether the value is non-zero.
-func (v *NonZeroDurationValidator) Validate(val time.Duration) (ok bool, err error) {
-	if ok, err := validateNonZero(val); !ok {
-		return false, fmt.Errorf("duration is zero")
-	} else if err != nil {
-		return false, err
+func (v *NonZeroDurationValidator) Validate(val time.Duration) error {
+	if err := validateNonZero(val); err != nil {
+		return fmt.Errorf("duration is zero")
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1115,7 +1105,7 @@ func (v *NonZeroDurationValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonZeroDurationValidator) Handle(val time.Duration) (time.Duration, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1133,11 +1123,11 @@ func (v *NonZeroDurationAliasValidator) Name() string {
 type NonZeroIPValidator struct{}
 
 // Validate checks whether the value is non-zero.
-func (v *NonZeroIPValidator) Validate(val net.IP) (ok bool, err error) {
+func (v *NonZeroIPValidator) Validate(val net.IP) error {
 	if len(val) == 0 || val.IsUnspecified() {
-		return false, fmt.Errorf("ip is zero")
+		return fmt.Errorf("ip is zero")
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1152,7 +1142,7 @@ func (v *NonZeroIPValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonZeroIPValidator) Handle(val net.IP) (net.IP, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1173,29 +1163,29 @@ type IPRangeValidator struct {
 }
 
 // Validate checks whether the value is within the configured range.
-func (v *IPRangeValidator) Validate(val net.IP) (ok bool, err error) {
+func (v *IPRangeValidator) Validate(val net.IP) error {
 	start := normalizeIP(v.Start)
 	end := normalizeIP(v.End)
 	value := normalizeIP(val)
 	if start == nil || end == nil {
-		return false, errors.New(`"start" and "end" must be valid IPs`)
+		return errors.New(`"start" and "end" must be valid IPs`)
 	}
 	if value == nil {
-		return false, fmt.Errorf("invalid IP")
+		return fmt.Errorf("invalid IP")
 	}
 	if len(start) != len(end) {
-		return false, errors.New(`"start" and "end" must be same IP family`)
+		return errors.New(`"start" and "end" must be same IP family`)
 	}
 	if len(value) != len(start) {
-		return false, errors.New("ip family mismatch")
+		return errors.New("ip family mismatch")
 	}
 	if bytes.Compare(start, end) > 0 {
-		return false, errors.New(`"start" must be less than or equal to "end"`)
+		return errors.New(`"start" must be less than or equal to "end"`)
 	}
 	if bytes.Compare(value, start) < 0 || bytes.Compare(value, end) > 0 {
-		return false, fmt.Errorf("ip %v is not in range [%v, %v]", val, v.Start, v.End)
+		return fmt.Errorf("ip %v is not in range [%v, %v]", val, v.Start, v.End)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1223,7 +1213,7 @@ func (v *IPRangeValidator) ConvertParam(field reflect.StructField, fieldValue re
 
 // Handle validates the value and returns it unchanged.
 func (v *IPRangeValidator) Handle(val net.IP) (net.IP, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1231,13 +1221,11 @@ func (v *IPRangeValidator) Handle(val net.IP) (net.IP, error) {
 type NonZeroURLValidator struct{}
 
 // Validate checks whether the value is non-zero.
-func (v *NonZeroURLValidator) Validate(val url.URL) (ok bool, err error) {
-	if ok, err := validateNonZero(val); !ok {
-		return false, fmt.Errorf("url is zero")
-	} else if err != nil {
-		return false, err
+func (v *NonZeroURLValidator) Validate(val url.URL) error {
+	if err := validateNonZero(val); err != nil {
+		return fmt.Errorf("url is zero")
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1252,7 +1240,7 @@ func (v *NonZeroURLValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *NonZeroURLValidator) Handle(val url.URL) (url.URL, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1272,7 +1260,7 @@ type OneOfFloat64Validator struct {
 }
 
 // Validate checks whether the value is in the configured set.
-func (v *OneOfFloat64Validator) Validate(val float64) (ok bool, err error) {
+func (v *OneOfFloat64Validator) Validate(val float64) error {
 	return validateOneOf(val, v.Values, errors.New(`value of parameter "values" cannot be empty`), "value %g is not in allowed set")
 }
 
@@ -1306,7 +1294,7 @@ func (v *OneOfFloat64Validator) ConvertParam(field reflect.StructField, fieldVal
 
 // Handle validates the value and returns it unchanged.
 func (v *OneOfFloat64Validator) Handle(val float64) (float64, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1316,7 +1304,7 @@ type OneOfStringValidator struct {
 }
 
 // Validate checks whether the value is in the configured set.
-func (v *OneOfStringValidator) Validate(val string) (ok bool, err error) {
+func (v *OneOfStringValidator) Validate(val string) error {
 	return validateOneOf(val, v.Values, errors.New(`value of parameter "values" cannot be empty`), "value %q is not in allowed set")
 }
 
@@ -1342,7 +1330,7 @@ func (v *OneOfStringValidator) ConvertParam(field reflect.StructField, fieldValu
 
 // Handle validates the value and returns it unchanged.
 func (v *OneOfStringValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1352,7 +1340,7 @@ type OneOfIntValidator struct {
 }
 
 // Validate checks whether the value is in the configured set.
-func (v *OneOfIntValidator) Validate(val int) (ok bool, err error) {
+func (v *OneOfIntValidator) Validate(val int) error {
 	return validateOneOf(val, v.Values, errors.New(`value of parameter "values" cannot be empty`), "value %d is not in allowed set")
 }
 
@@ -1386,7 +1374,7 @@ func (v *OneOfIntValidator) ConvertParam(field reflect.StructField, fieldValue r
 
 // Handle validates the value and returns it unchanged.
 func (v *OneOfIntValidator) Handle(val int) (int, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1396,14 +1384,14 @@ type PrefixValidator struct {
 }
 
 // Validate checks whether the value has the configured prefix.
-func (v *PrefixValidator) Validate(val string) (ok bool, err error) {
+func (v *PrefixValidator) Validate(val string) error {
 	if v.Value == "" {
-		return false, errors.New(`value of parameter "value" cannot be empty`)
+		return errors.New(`value of parameter "value" cannot be empty`)
 	}
 	if !strings.HasPrefix(val, v.Value) {
-		return false, fmt.Errorf("value %q does not have prefix %q", val, v.Value)
+		return fmt.Errorf("value %q does not have prefix %q", val, v.Value)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1418,7 +1406,7 @@ func (v *PrefixValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *PrefixValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1428,14 +1416,14 @@ type SuffixValidator struct {
 }
 
 // Validate checks whether the value has the configured suffix.
-func (v *SuffixValidator) Validate(val string) (ok bool, err error) {
+func (v *SuffixValidator) Validate(val string) error {
 	if v.Value == "" {
-		return false, errors.New(`value of parameter "value" cannot be empty`)
+		return errors.New(`value of parameter "value" cannot be empty`)
 	}
 	if !strings.HasSuffix(val, v.Value) {
-		return false, fmt.Errorf("value %q does not have suffix %q", val, v.Value)
+		return fmt.Errorf("value %q does not have suffix %q", val, v.Value)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1450,7 +1438,7 @@ func (v *SuffixValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *SuffixValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1460,14 +1448,14 @@ type ContainsValidator struct {
 }
 
 // Validate checks whether the value contains the configured substring.
-func (v *ContainsValidator) Validate(val string) (ok bool, err error) {
+func (v *ContainsValidator) Validate(val string) error {
 	if v.Value == "" {
-		return false, errors.New(`value of parameter "value" cannot be empty`)
+		return errors.New(`value of parameter "value" cannot be empty`)
 	}
 	if !strings.Contains(val, v.Value) {
-		return false, fmt.Errorf("value %q does not contain %q", val, v.Value)
+		return fmt.Errorf("value %q does not contain %q", val, v.Value)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1482,7 +1470,7 @@ func (v *ContainsValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *ContainsValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1493,32 +1481,32 @@ type UUIDValidator struct {
 }
 
 // Validate checks whether the value is a UUID.
-func (v *UUIDValidator) Validate(val string) (ok bool, err error) {
+func (v *UUIDValidator) Validate(val string) error {
 	re := regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-([0-9a-fA-F])[0-9a-fA-F]{3}-([0-9a-fA-F])[0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
 	matches := re.FindStringSubmatch(val)
 	if matches == nil {
-		return false, fmt.Errorf("value %q is not a valid UUID", val)
+		return fmt.Errorf("value %q is not a valid UUID", val)
 	}
 	versionChar := strings.ToLower(matches[1])
 	variantChar := strings.ToLower(matches[2])
 	version, err := strconv.ParseInt(versionChar, 16, 0)
 	if err != nil {
-		return false, fmt.Errorf("invalid UUID version %q", versionChar)
+		return fmt.Errorf("invalid UUID version %q", versionChar)
 	}
 	if variantChar != "8" && variantChar != "9" && variantChar != "a" && variantChar != "b" {
-		return false, fmt.Errorf("value %q is not a valid UUID variant", val)
+		return fmt.Errorf("value %q is not a valid UUID variant", val)
 	}
 	expected := v.Version
 	if expected == 0 {
 		expected = 4
 	}
 	if expected < 1 || expected > 8 {
-		return false, fmt.Errorf("invalid UUID version %d", expected)
+		return fmt.Errorf("invalid UUID version %d", expected)
 	}
 	if int(version) != expected {
-		return false, fmt.Errorf("value %q is not a UUIDv%d", val, expected)
+		return fmt.Errorf("value %q is not a UUIDv%d", val, expected)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1550,7 +1538,7 @@ func (v *UUIDValidator) ConvertParam(field reflect.StructField, fieldValue refle
 
 // Handle validates the value and returns it unchanged.
 func (v *UUIDValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1560,17 +1548,17 @@ type HostnameValidator struct{}
 var hostnamePattern = regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`)
 
 // Validate checks whether the value is a valid hostname.
-func (v *HostnameValidator) Validate(val string) (ok bool, err error) {
+func (v *HostnameValidator) Validate(val string) error {
 	if val == "" {
-		return false, fmt.Errorf("value %q is not a valid hostname", val)
+		return fmt.Errorf("value %q is not a valid hostname", val)
 	}
 	if val == "localhost" {
-		return true, nil
+		return nil
 	}
 	if !hostnamePattern.MatchString(val) {
-		return false, fmt.Errorf("value %q is not a valid hostname", val)
+		return fmt.Errorf("value %q is not a valid hostname", val)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1585,7 +1573,7 @@ func (v *HostnameValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *HostnameValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1593,11 +1581,11 @@ func (v *HostnameValidator) Handle(val string) (string, error) {
 type IPCIDRValidator struct{}
 
 // Validate checks whether the value is a valid CIDR.
-func (v *IPCIDRValidator) Validate(val string) (ok bool, err error) {
+func (v *IPCIDRValidator) Validate(val string) error {
 	if _, _, err := net.ParseCIDR(val); err != nil {
-		return false, fmt.Errorf("invalid CIDR %q: %v", val, err)
+		return fmt.Errorf("invalid CIDR %q: %v", val, err)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1612,7 +1600,7 @@ func (v *IPCIDRValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *IPCIDRValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1620,17 +1608,17 @@ func (v *IPCIDRValidator) Handle(val string) (string, error) {
 type Base64Validator struct{}
 
 // Validate checks whether the value is base64 encoded.
-func (v *Base64Validator) Validate(val string) (ok bool, err error) {
+func (v *Base64Validator) Validate(val string) error {
 	if val == "" {
-		return false, fmt.Errorf("value is empty")
+		return fmt.Errorf("value is empty")
 	}
 	if _, err := base64.StdEncoding.DecodeString(val); err == nil {
-		return true, nil
+		return nil
 	}
 	if _, err := base64.RawStdEncoding.DecodeString(val); err == nil {
-		return true, nil
+		return nil
 	}
-	return false, fmt.Errorf("value %q is not valid base64", val)
+	return fmt.Errorf("value %q is not valid base64", val)
 }
 
 // Name returns the directive identifier.
@@ -1645,7 +1633,7 @@ func (v *Base64Validator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *Base64Validator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1653,16 +1641,16 @@ func (v *Base64Validator) Handle(val string) (string, error) {
 type HexValidator struct{}
 
 // Validate checks whether the value is a hex string.
-func (v *HexValidator) Validate(val string) (ok bool, err error) {
+func (v *HexValidator) Validate(val string) error {
 	if val == "" {
-		return false, fmt.Errorf("value is empty")
+		return fmt.Errorf("value is empty")
 	}
 	clean := strings.TrimPrefix(val, "0x")
 	clean = strings.TrimPrefix(clean, "0X")
 	if _, err := hex.DecodeString(clean); err != nil {
-		return false, fmt.Errorf("value %q is not valid hex", val)
+		return fmt.Errorf("value %q is not valid hex", val)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1677,7 +1665,7 @@ func (v *HexValidator) Mode() tagex.DirectiveMode {
 
 // Handle validates the value and returns it unchanged.
 func (v *HexValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1688,15 +1676,15 @@ type TimeValidator struct {
 }
 
 // Validate checks whether the value matches the configured layout.
-func (v *TimeValidator) Validate(val string) (ok bool, err error) {
+func (v *TimeValidator) Validate(val string) error {
 	layout := strings.TrimSpace(v.Format)
 	if layout == "" {
 		layout = time.RFC3339
 	}
 	if _, err := time.Parse(layout, val); err != nil {
-		return false, fmt.Errorf("invalid time %q for layout %q: %v", val, layout, err)
+		return fmt.Errorf("invalid time %q for layout %q: %v", val, layout, err)
 	}
-	return true, nil
+	return nil
 }
 
 // Name returns the directive identifier.
@@ -1756,7 +1744,7 @@ func (v *TimeValidator) ConvertParam(field reflect.StructField, fieldValue refle
 
 // Handle validates the value and returns it unchanged.
 func (v *TimeValidator) Handle(val string) (string, error) {
-	_, err := v.Validate(val)
+	err := v.Validate(val)
 	return val, err
 }
 
@@ -1813,11 +1801,11 @@ type CompositeValidator[T cmp.Ordered] struct {
 }
 
 // Validate checks the value against each validator in order.
-func (cv *CompositeValidator[T]) Validate(val T) (ok bool, err error) {
+func (cv *CompositeValidator[T]) Validate(val T) error {
 	for _, validator := range cv.Validators {
-		if ok, err = validator.Validate(val); !ok {
-			return false, err
+		if err := validator.Validate(val); err != nil {
+			return err
 		}
 	}
-	return true, nil
+	return nil
 }

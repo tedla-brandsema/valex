@@ -54,12 +54,12 @@ func Status(err error) int {
 	return http.StatusBadRequest
 }
 
-// Validate parses the request, binds and validates dst, and returns an *Error
-// (with an HTTP status code) on failure.
-func Validate(r *http.Request, dst any) (bool, error) {
+// Validate parses the request, binds and validates dst, and returns nil on
+// success or an *Error (with an HTTP status code) on failure.
+func Validate(r *http.Request, dst any) error {
 	validator, err := New(r)
 	if err != nil {
-		return false, &Error{Status: http.StatusBadRequest, Err: err}
+		return &Error{Status: http.StatusBadRequest, Err: err}
 	}
 	return validator.Validate(dst)
 }

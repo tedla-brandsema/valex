@@ -28,7 +28,7 @@ func ExampleValidate() {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		var in Signup
-		if ok, err := forms.Validate(req, &in); ok {
+		if err := forms.Validate(req, &in); err == nil {
 			fmt.Printf("%q: ok\n", in.Name)
 		} else {
 			var ferr *forms.Error

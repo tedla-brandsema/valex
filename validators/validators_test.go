@@ -26,7 +26,8 @@ func TestIntRangeValidator(t *testing.T) {
 		{21, false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -46,7 +47,8 @@ func TestFloat64RangeValidator(t *testing.T) {
 		{3.6, false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -65,7 +67,8 @@ func TestNonZeroValidator(t *testing.T) {
 			{-1, true},
 		}
 		for _, tc := range tests {
-			ok, err := v.Validate(tc.input)
+			err := v.Validate(tc.input)
+			ok := err == nil
 			if ok != tc.ok {
 				t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 			}
@@ -82,7 +85,8 @@ func TestNonZeroValidator(t *testing.T) {
 			{"value", true},
 		}
 		for _, tc := range tests {
-			ok, err := v.Validate(tc.input)
+			err := v.Validate(tc.input)
+			ok := err == nil
 			if ok != tc.ok {
 				t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 			}
@@ -104,7 +108,8 @@ func TestNonZeroValidator(t *testing.T) {
 			{sample{Name: "name"}, true},
 		}
 		for _, tc := range tests {
-			ok, err := v.Validate(tc.input)
+			err := v.Validate(tc.input)
+			ok := err == nil
 			if ok != tc.ok {
 				t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 			}
@@ -123,7 +128,8 @@ func TestNonZeroValidator(t *testing.T) {
 			{&value, true},
 		}
 		for _, tc := range tests {
-			ok, err := v.Validate(tc.input)
+			err := v.Validate(tc.input)
+			ok := err == nil
 			if ok != tc.ok {
 				t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 			}
@@ -142,7 +148,8 @@ func TestNonZeroValidator(t *testing.T) {
 			{"ok", true},
 		}
 		for _, tc := range tests {
-			ok, err := v.Validate(tc.input)
+			err := v.Validate(tc.input)
+			ok := err == nil
 			if ok != tc.ok {
 				t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 			}
@@ -161,7 +168,8 @@ func TestNonNegativeIntValidator(t *testing.T) {
 		{1, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -179,7 +187,8 @@ func TestNonNegativeFloat64Validator(t *testing.T) {
 		{1.5, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -197,7 +206,8 @@ func TestNonPositiveIntValidator(t *testing.T) {
 		{1, false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -215,7 +225,8 @@ func TestNonPositiveFloat64Validator(t *testing.T) {
 		{1.5, false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -234,7 +245,8 @@ func TestUrlValidator(t *testing.T) {
 		{"", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -252,7 +264,8 @@ func TestEmailValidator(t *testing.T) {
 		{"", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -269,7 +282,8 @@ func TestNonEmptyStringValidator(t *testing.T) {
 		{"", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -288,7 +302,8 @@ func TestMinLengthValidator(t *testing.T) {
 		{"", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -307,7 +322,8 @@ func TestMaxLengthValidator(t *testing.T) {
 		{"", true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -327,7 +343,8 @@ func TestLengthRangeValidator(t *testing.T) {
 		{"abcdef", true}, // exactly at maximum
 	}
 	for _, tt := range tests {
-		ok, err := v.Validate(tt.input)
+		err := v.Validate(tt.input)
+		ok := err == nil
 		if ok != tt.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
@@ -345,7 +362,8 @@ func TestLengthRangeValidatorBounds(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ok, err := tc.v.Validate("abc")
+			err := tc.v.Validate("abc")
+			ok := err == nil
 			if ok || err == nil {
 				t.Fatalf("expected bounds error, got ok=%v err=%v", ok, err)
 			}
@@ -355,7 +373,8 @@ func TestLengthRangeValidatorBounds(t *testing.T) {
 
 func TestMinLengthValidatorNegative(t *testing.T) {
 	v := &MinLengthValidator{Size: -1}
-	ok, err := v.Validate("abc")
+	err := v.Validate("abc")
+	ok := err == nil
 	if ok || err == nil {
 		t.Fatalf("expected negative size error, got ok=%v err=%v", ok, err)
 	}
@@ -363,7 +382,8 @@ func TestMinLengthValidatorNegative(t *testing.T) {
 
 func TestMaxLengthValidatorNegative(t *testing.T) {
 	v := &MaxLengthValidator{Size: -1}
-	ok, err := v.Validate("abc")
+	err := v.Validate("abc")
+	ok := err == nil
 	if ok || err == nil {
 		t.Fatalf("expected negative size error, got ok=%v err=%v", ok, err)
 	}
@@ -382,7 +402,8 @@ func TestRegexValidator(t *testing.T) {
 		{"", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -400,7 +421,8 @@ func TestMinIntValidator(t *testing.T) {
 		{9, false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -418,7 +440,8 @@ func TestMinFloat64Validator(t *testing.T) {
 		{1.4, false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -436,7 +459,8 @@ func TestMaxIntValidator(t *testing.T) {
 		{11, false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -454,7 +478,8 @@ func TestMaxFloat64Validator(t *testing.T) {
 		{1.6, false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -472,7 +497,8 @@ func TestNonZeroIntValidator(t *testing.T) {
 		{-1, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -490,7 +516,8 @@ func TestNonZeroFloat64Validator(t *testing.T) {
 		{-1.5, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -507,7 +534,8 @@ func TestNonZeroTimeValidator(t *testing.T) {
 		{time.Now(), true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -526,7 +554,8 @@ func TestTimeBeforeValidator(t *testing.T) {
 		{ref.Add(time.Second), false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -545,7 +574,8 @@ func TestTimeAfterValidator(t *testing.T) {
 		{ref.Add(-time.Second), false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -567,7 +597,8 @@ func TestTimeBetweenValidator(t *testing.T) {
 		{end.Add(time.Second), false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -579,7 +610,8 @@ func TestTimeBetweenValidatorBounds(t *testing.T) {
 		Start: time.Date(2024, 1, 3, 0, 0, 0, 0, time.UTC),
 		End:   time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC),
 	}
-	ok, err := v.Validate(time.Date(2024, 1, 2, 12, 0, 0, 0, time.UTC))
+	err := v.Validate(time.Date(2024, 1, 2, 12, 0, 0, 0, time.UTC))
+	ok := err == nil
 	if ok || err == nil {
 		t.Fatalf("expected bounds error, got ok=%v err=%v", ok, err)
 	}
@@ -596,7 +628,8 @@ func TestPositiveDurationValidator(t *testing.T) {
 		{time.Second, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -613,7 +646,8 @@ func TestNonZeroDurationValidator(t *testing.T) {
 		{time.Second, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -632,7 +666,8 @@ func TestNonZeroIPValidator(t *testing.T) {
 		{net.ParseIP("192.168.1.1"), true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -655,7 +690,8 @@ func TestIPRangeValidator(t *testing.T) {
 		{net.ParseIP("192.168.1.21"), false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -667,7 +703,8 @@ func TestIPRangeValidatorBounds(t *testing.T) {
 		Start: net.ParseIP("192.168.1.20"),
 		End:   net.ParseIP("192.168.1.10"),
 	}
-	ok, err := v.Validate(net.ParseIP("192.168.1.15"))
+	err := v.Validate(net.ParseIP("192.168.1.15"))
+	ok := err == nil
 	if ok || err == nil {
 		t.Fatalf("expected bounds error, got ok=%v err=%v", ok, err)
 	}
@@ -678,7 +715,8 @@ func TestIPRangeValidatorFamilyMismatch(t *testing.T) {
 		Start: net.ParseIP("192.168.1.10"),
 		End:   net.ParseIP("192.168.1.20"),
 	}
-	ok, err := v.Validate(net.ParseIP("2001:db8::1"))
+	err := v.Validate(net.ParseIP("2001:db8::1"))
+	ok := err == nil
 	if ok || err == nil {
 		t.Fatalf("expected family mismatch error, got ok=%v err=%v", ok, err)
 	}
@@ -695,7 +733,8 @@ func TestNonZeroURLValidator(t *testing.T) {
 		{neturl.URL{Scheme: "https", Host: "example.com"}, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%v): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -713,7 +752,8 @@ func TestOneOfStringValidator(t *testing.T) {
 		{"yellow", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -731,7 +771,8 @@ func TestOneOfIntValidator(t *testing.T) {
 		{5, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -749,7 +790,8 @@ func TestOneOfFloat64Validator(t *testing.T) {
 		{5.5, true},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%g): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -766,7 +808,8 @@ func TestPrefixValidator(t *testing.T) {
 		{"nopre", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -783,7 +826,8 @@ func TestSuffixValidator(t *testing.T) {
 		{"fixes", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -800,7 +844,8 @@ func TestContainsValidator(t *testing.T) {
 		{"nomatch", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -818,7 +863,8 @@ func TestUUIDValidator(t *testing.T) {
 		{"550e8400e29b41d4a716446655440000", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -835,7 +881,8 @@ func TestUUIDValidatorVersion(t *testing.T) {
 		{"550e8400-e29b-41d4-a716-446655440000", false}, // v4
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -853,7 +900,8 @@ func TestHostnameValidator(t *testing.T) {
 		{"http://example.com", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -871,7 +919,8 @@ func TestIPCIDRValidator(t *testing.T) {
 		{"invalid", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -889,7 +938,8 @@ func TestBase64Validator(t *testing.T) {
 		{"not-base64", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -907,7 +957,8 @@ func TestHexValidator(t *testing.T) {
 		{"xyz", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -924,7 +975,8 @@ func TestTimeValidator(t *testing.T) {
 		{"2020-01-02", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -941,7 +993,8 @@ func TestTimeValidatorFormat(t *testing.T) {
 		{"2020-01-02T03:04:05Z", false},
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -993,7 +1046,8 @@ func TestRegisterDirective(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ok, err := valex.ValidateStruct(tt.data)
+			err := valex.ValidateStruct(tt.data)
+			ok := err == nil
 			if ok != tt.wantValid {
 				t.Fatalf("expected ok=%v, got ok=%v (err: %v)", tt.wantValid, ok, err)
 			}
@@ -1074,7 +1128,8 @@ func TestAlphaNumericValidator(t *testing.T) {
 		{"", false},
 	}
 	for _, tt := range tests {
-		ok, err := v.Validate(tt.input)
+		err := v.Validate(tt.input)
+		ok := err == nil
 		if ok != tt.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
@@ -1101,7 +1156,8 @@ func TestMACAddressValidator(t *testing.T) {
 		{"invalid-mac", false},
 	}
 	for _, tt := range tests {
-		ok, err := v.Validate(tt.input)
+		err := v.Validate(tt.input)
+		ok := err == nil
 		if ok != tt.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
@@ -1120,7 +1176,8 @@ func TestIpValidator(t *testing.T) {
 		{"123.456.789.0", false}, // invalid IPv4
 	}
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
@@ -1138,7 +1195,8 @@ func TestIPv4Validator(t *testing.T) {
 		{"invalid", false},
 	}
 	for _, tt := range tests {
-		ok, err := v.Validate(tt.input)
+		err := v.Validate(tt.input)
+		ok := err == nil
 		if ok != tt.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
@@ -1156,7 +1214,8 @@ func TestIPv6Validator(t *testing.T) {
 		{"invalid", false},
 	}
 	for _, tt := range tests {
-		ok, err := v.Validate(tt.input)
+		err := v.Validate(tt.input)
+		ok := err == nil
 		if ok != tt.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
@@ -1197,7 +1256,8 @@ func TestXMLValidator(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v, error: %v", *v, tc.input, tc.ok, ok, err)
 		}
@@ -1225,7 +1285,8 @@ func TestJSONValidator(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		ok, err := v.Validate(tc.input)
+		err := v.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T(%q): expected ok=%v, got ok=%v, error: %v", *v, tc.input, tc.ok, ok, err)
 		}
@@ -1247,7 +1308,8 @@ func TestCompositeValidator_String(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		ok, err := composite.Validate(tc.input)
+		err := composite.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T (string) for input %q: expected ok=%v, got ok=%v (err: %v)", *composite, tc.input, tc.ok, ok, err)
 		}
@@ -1269,7 +1331,8 @@ func TestCompositeValidator_Int(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		ok, err := composite.Validate(tc.input)
+		err := composite.Validate(tc.input)
+		ok := err == nil
 		if ok != tc.ok {
 			t.Errorf("%T (int) for input %d: expected ok=%v, got ok=%v (err: %v)", *composite, tc.input, tc.ok, ok, err)
 		}

@@ -23,7 +23,7 @@
 //
 //	func handler(w http.ResponseWriter, r *http.Request) {
 //		var in Signup
-//		if ok, err := forms.Validate(r, &in); !ok {
+//		if err := forms.Validate(r, &in); err != nil {
 //			var ferr *forms.Error
 //			errors.As(err, &ferr)
 //			http.Error(w, err.Error(), ferr.StatusCode())

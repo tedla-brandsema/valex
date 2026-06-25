@@ -47,11 +47,11 @@ import (
 
 func main() {
 	// A quick validator from a function.
-	nonEmpty := valex.ValidatorFunc[string](func(val string) (bool, error) {
+	nonEmpty := valex.ValidatorFunc[string](func(val string) error {
 		if val == "" {
-			return false, fmt.Errorf("string cannot be empty")
+			return fmt.Errorf("string cannot be empty")
 		}
-		return true, nil
+		return nil
 	})
 
 	vv := valex.ValidatedValue[string]{Validator: nonEmpty}
@@ -91,8 +91,9 @@ type User struct {
 }
 
 func main() {
-	ok, err := valex.ValidateStruct(&User{Name: "Al", Email: "invalid", Age: 200})
-	fmt.Println(ok, err)
+	if err := valex.ValidateStruct(&User{Name: "Al", Email: "invalid", Age: 200}); err != nil {
+		fmt.Println(err)
+	}
 }
 ```
 
@@ -131,8 +132,9 @@ func main() {
 	type Item struct {
 		Count int `val:"even"`
 	}
-	ok, err := valex.ValidateStruct(&Item{Count: 3})
-	fmt.Println(ok, err)
+	if err := valex.ValidateStruct(&Item{Count: 3}); err != nil {
+		fmt.Println(err)
+	}
 }
 ```
 
@@ -152,7 +154,7 @@ type Signup struct {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	var in Signup
-	if ok, err := forms.Validate(r, &in); !ok {
+	if err := forms.Validate(r, &in); err != nil {
 		var ferr *forms.Error
 		errors.As(err, &ferr)
 		http.Error(w, err.Error(), ferr.StatusCode())
@@ -169,7 +171,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 do **not** need to import `tagex`:
 
 ```go
-ok, err := valex.ValidateStruct(&User{ /* ... */ })
+err := valex.ValidateStruct(&User{ /* ... */ })
 if err != nil {
 	var conv *valex.ConversionError
 	switch {

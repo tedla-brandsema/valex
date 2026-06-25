@@ -9,33 +9,31 @@ import (
 	"github.com/tedla-brandsema/valex/validators"
 )
 
-// ValidatorFunc adapts a plain function into a Validator.
+// ValidatorFunc adapts a plain function into a Validator. A nil return means the
+// value is valid.
 func ExampleValidatorFunc() {
-	nonEmpty := valex.ValidatorFunc[string](func(s string) (bool, error) {
+	nonEmpty := valex.ValidatorFunc[string](func(s string) error {
 		if s == "" {
-			return false, errors.New("must not be empty")
+			return errors.New("must not be empty")
 		}
-		return true, nil
+		return nil
 	})
 
-	ok, err := nonEmpty.Validate("hello")
-	fmt.Println(ok, err)
-
-	ok, err = nonEmpty.Validate("")
-	fmt.Println(ok, err)
+	fmt.Println(nonEmpty.Validate("hello"))
+	fmt.Println(nonEmpty.Validate(""))
 	// Output:
-	// true <nil>
-	// false must not be empty
+	// <nil>
+	// must not be empty
 }
 
 // ValidatedValue stores a value only when it passes the configured Validator,
 // leaving the previous value in place on failure.
 func ExampleValidatedValue() {
-	positive := valex.ValidatorFunc[int](func(n int) (bool, error) {
+	positive := valex.ValidatorFunc[int](func(n int) error {
 		if n <= 0 {
-			return false, errors.New("must be positive")
+			return errors.New("must be positive")
 		}
-		return true, nil
+		return nil
 	})
 
 	v := valex.ValidatedValue[int]{Validator: positive}
@@ -64,14 +62,11 @@ func ExampleValidateStruct() {
 		Age   int    `val:"rangeint,min=0,max=120"`
 	}
 
-	ok, err := valex.ValidateStruct(&User{Email: "gopher@example.com", Age: 30})
-	fmt.Println(ok, err)
-
-	ok, err = valex.ValidateStruct(&User{Email: "gopher@example.com", Age: 200})
-	fmt.Println(ok, err)
+	fmt.Println(valex.ValidateStruct(&User{Email: "gopher@example.com", Age: 30}))
+	fmt.Println(valex.ValidateStruct(&User{Email: "gopher@example.com", Age: 200}))
 	// Output:
-	// true <nil>
-	// false tag "val" error: directive processing field "Age" directive "rangeint": value 200 is out of range [0, 120]
+	// <nil>
+	// tag "val" error: directive processing field "Age" directive "rangeint": value 200 is out of range [0, 120]
 }
 
 // evenDirective is a custom "val" directive that accepts only even ints.
@@ -95,12 +90,9 @@ func ExampleRegisterDirective() {
 		Seats int `val:"even"`
 	}
 
-	ok, err := valex.ValidateStruct(&Ticket{Seats: 4})
-	fmt.Println(ok, err)
-
-	ok, err = valex.ValidateStruct(&Ticket{Seats: 3})
-	fmt.Println(ok, err)
+	fmt.Println(valex.ValidateStruct(&Ticket{Seats: 4}))
+	fmt.Println(valex.ValidateStruct(&Ticket{Seats: 3}))
 	// Output:
-	// true <nil>
-	// false tag "val" error: directive processing field "Seats" directive "even": value 3 is not even
+	// <nil>
+	// tag "val" error: directive processing field "Seats" directive "even": value 3 is not even
 }

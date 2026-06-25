@@ -14,7 +14,7 @@
 //		Age   int    `val:"rangeint,min=0,max=120"`
 //	}
 //
-//	ok, err := valex.ValidateStruct(&User{Email: "a@b.com", Age: 30})
+//	err := valex.ValidateStruct(&User{Email: "a@b.com", Age: 30})
 //
 // Parameters are supplied in the tag after the directive name
 // (for example "rangeint,min=0,max=120"). Where a directive takes a list, the

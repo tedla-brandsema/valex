@@ -108,7 +108,8 @@ func TestValidateStruct_int(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			valid, err := valex.ValidateStruct(tc.data)
+			err := valex.ValidateStruct(tc.data)
+			valid := err == nil
 			if valid != tc.wantValid {
 				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
 			}
@@ -186,7 +187,8 @@ func TestValidateStruct_string(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			valid, err := valex.ValidateStruct(tc.data)
+			err := valex.ValidateStruct(tc.data)
+			valid := err == nil
 			if valid != tc.wantValid {
 				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
 			}
@@ -240,7 +242,8 @@ func TestValidateStruct_float64(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			valid, err := valex.ValidateStruct(tc.data)
+			err := valex.ValidateStruct(tc.data)
+			valid := err == nil
 			if valid != tc.wantValid {
 				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
 			}
@@ -362,7 +365,8 @@ func TestValidateStruct_timeDurationIPURL(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			valid, err := valex.ValidateStruct(tc.data)
+			err := valex.ValidateStruct(tc.data)
+			valid := err == nil
 			if valid != tc.wantValid {
 				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
 			}

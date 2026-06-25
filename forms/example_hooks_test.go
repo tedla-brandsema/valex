@@ -94,7 +94,7 @@ func Example_lifecycleHooks() {
 
 		fmt.Printf("submit #%d: name=%q email=%q\n", n, name, email)
 		reg := Registration{store: store}
-		if ok, err := forms.Validate(req, &reg); ok {
+		if err := forms.Validate(req, &reg); err == nil {
 			fmt.Printf("  -> accepted; Success persisted: %s <%s>\n", reg.Name, reg.Email)
 		} else {
 			var ferr *forms.Error

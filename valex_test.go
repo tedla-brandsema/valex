@@ -19,14 +19,13 @@ func TestValidateStruct(t *testing.T) {
 		Age  int    `val:"intrange,min=0,max=120"`
 	}
 
-	ok, err := valex.ValidateStruct(&Person{Name: "Alice", Age: 30})
-	if !ok || err != nil {
-		t.Fatalf("expected success, got ok=%v err=%v", ok, err)
+	if err := valex.ValidateStruct(&Person{Name: "Alice", Age: 30}); err != nil {
+		t.Fatalf("expected success, got %v", err)
 	}
 
-	ok, err = valex.ValidateStruct(&Person{Name: "Al", Age: 30})
-	if ok || err == nil {
-		t.Fatalf("expected failure on short name, got ok=%v err=%v", ok, err)
+	err := valex.ValidateStruct(&Person{Name: "Al", Age: 30})
+	if err == nil {
+		t.Fatal("expected failure on short name")
 	}
 	if !strings.Contains(err.Error(), "minlen") {
 		t.Fatalf("expected error to reference directive, got %v", err)
@@ -38,9 +37,9 @@ func TestValidateStructUnknownDirective(t *testing.T) {
 		Field int `val:"nope"`
 	}{Field: 1}
 
-	ok, err := valex.ValidateStruct(data)
-	if ok || err == nil {
-		t.Fatalf("expected unknown-directive error, got ok=%v err=%v", ok, err)
+	err := valex.ValidateStruct(data)
+	if err == nil {
+		t.Fatal("expected unknown-directive error")
 	}
 	if !strings.Contains(err.Error(), `unknown directive "nope"`) {
 		t.Fatalf("unexpected error: %v", err)
@@ -48,11 +47,11 @@ func TestValidateStructUnknownDirective(t *testing.T) {
 }
 
 func TestValidatedValue(t *testing.T) {
-	nonNegative := valex.ValidatorFunc[int](func(val int) (bool, error) {
+	nonNegative := valex.ValidatorFunc[int](func(val int) error {
 		if val < 0 {
-			return false, errors.New("must be non-negative")
+			return errors.New("must be non-negative")
 		}
-		return true, nil
+		return nil
 	})
 
 	v := valex.ValidatedValue[int]{Validator: nonNegative}
@@ -79,11 +78,11 @@ func TestValidatedValueNoValidator(t *testing.T) {
 }
 
 func TestMustValidate(t *testing.T) {
-	positive := valex.ValidatorFunc[int](func(val int) (bool, error) {
+	positive := valex.ValidatorFunc[int](func(val int) error {
 		if val <= 0 {
-			return false, errors.New("must be positive")
+			return errors.New("must be positive")
 		}
-		return true, nil
+		return nil
 	})
 
 	if got := valex.MustValidate(5, positive); got != 5 {

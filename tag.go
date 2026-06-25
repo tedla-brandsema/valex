@@ -14,11 +14,13 @@ func init() {
 	tag = tagex.NewTag(tagKey)
 }
 
-// ValidateStruct validates struct fields using the "val" tag directives.
-// Additional tagex.Tag values can be provided to process more tags in the same pass.
-func ValidateStruct(data any, tags ...*tagex.Tag) (bool, error) {
+// ValidateStruct validates struct fields using the "val" tag directives. It
+// returns nil when the struct is valid. Additional tagex.Tag values can be
+// provided to process more tags in the same pass.
+func ValidateStruct(data any, tags ...*tagex.Tag) error {
 	tags = append(tags, &tag)
-	return tagex.ProcessStruct(data, tags...)
+	_, err := tagex.ProcessStruct(data, tags...)
+	return err
 }
 
 // RegisterDirective registers a directive for use with the "val" struct tag.

@@ -39,16 +39,16 @@ func New(r *http.Request) (*Validator, error) {
 	return &Validator{rawValues: r.Form}, nil
 }
 
-// Validate binds form values into dst and validates its "val" tags. On failure
-// it returns an *Error carrying an HTTP status code (see Status).
-func (v *Validator) Validate(dst any) (bool, error) {
+// Validate binds form values into dst and validates its "val" tags. It returns
+// nil on success, or an *Error carrying an HTTP status code on failure (see Status).
+func (v *Validator) Validate(dst any) error {
 	if err := bindFormValues(dst, v.rawValues); err != nil {
-		return false, &Error{Status: Status(err), Err: err}
+		return &Error{Status: Status(err), Err: err}
 	}
-	if ok, err := valex.ValidateStruct(dst); err != nil {
-		return ok, &Error{Status: Status(err), Err: err}
+	if err := valex.ValidateStruct(dst); err != nil {
+		return &Error{Status: Status(err), Err: err}
 	}
-	return true, nil
+	return nil
 }
 
 // Bind binds url.Values into a struct pointer using "field" tags.

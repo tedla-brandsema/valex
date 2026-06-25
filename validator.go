@@ -4,16 +4,17 @@ import (
 	"fmt"
 )
 
-// Validator defines the behavior for validating a value of type T.
+// Validator defines the behavior for validating a value of type T. A nil error
+// means the value is valid; a non-nil error reports why it is invalid.
 type Validator[T any] interface {
-	Validate(val T) (ok bool, err error)
+	Validate(val T) error
 }
 
 // ValidatorFunc adapts a function to the Validator interface.
-type ValidatorFunc[T any] func(val T) (ok bool, err error)
+type ValidatorFunc[T any] func(val T) error
 
 // Validate calls the underlying function.
-func (p ValidatorFunc[T]) Validate(val T) (ok bool, err error) {
+func (p ValidatorFunc[T]) Validate(val T) error {
 	return p(val)
 }
 
@@ -28,7 +29,7 @@ func (v *ValidatedValue[T]) Set(val T) error {
 	if v.Validator == nil {
 		return ErrNoValidator
 	}
-	if ok, err := v.Validator.Validate(val); !ok {
+	if err := v.Validator.Validate(val); err != nil {
 		return err
 	}
 	v.value = val
@@ -48,7 +49,7 @@ func (v *ValidatedValue[T]) String() string {
 
 // MustValidate validates a value or panics if validation fails.
 func MustValidate[T any](val T, v Validator[T]) T {
-	if ok, err := v.Validate(val); !ok {
+	if err := v.Validate(val); err != nil {
 		panic(err)
 	}
 	return val
