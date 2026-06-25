@@ -500,3 +500,34 @@ func TestValidateFormParseError(t *testing.T) {
 		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, formErr.StatusCode())
 	}
 }
+
+// The (*Validator).Validate method wraps failures in *Error too, not only the
+// package-level Validate convenience wrapper.
+func TestFormValidatorMethodWrapsError(t *testing.T) {
+	type Input struct {
+		Name string `field:"name" val:"minlen,size=3"`
+	}
+
+	values := url.Values{}
+	values.Set("name", "Al") // shorter than min length 3
+	req := httptest.NewRequest("POST", "/submit", strings.NewReader(values.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	validator, err := New(req)
+	if err != nil {
+		t.Fatalf("New error: %v", err)
+	}
+
+	var input Input
+	ok, err := validator.Validate(&input)
+	if ok || err == nil {
+		t.Fatalf("expected validation error, got ok=%v err=%v", ok, err)
+	}
+	var formErr *Error
+	if !errors.As(err, &formErr) {
+		t.Fatalf("expected *Error from (*Validator).Validate, got %T", err)
+	}
+	if formErr.StatusCode() != http.StatusUnprocessableEntity {
+		t.Fatalf("expected status %d, got %d", http.StatusUnprocessableEntity, formErr.StatusCode())
+	}
+}

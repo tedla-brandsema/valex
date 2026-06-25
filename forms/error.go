@@ -15,7 +15,7 @@ type Error struct {
 
 func (e *Error) Error() string {
 	if e == nil || e.Err == nil {
-		return ""
+		return "forms: validation failed"
 	}
 	return e.Err.Error()
 }
@@ -57,9 +57,5 @@ func Validate(r *http.Request, dst any) (bool, error) {
 	if err != nil {
 		return false, &Error{Status: http.StatusBadRequest, Err: err}
 	}
-	ok, err := validator.Validate(dst)
-	if err != nil {
-		return false, &Error{Status: Status(err), Err: err}
-	}
-	return ok, nil
+	return validator.Validate(dst)
 }

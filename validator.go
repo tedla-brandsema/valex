@@ -1,7 +1,6 @@
 package valex
 
 import (
-	"cmp"
 	"fmt"
 )
 
@@ -19,7 +18,7 @@ func (p ValidatorFunc[T]) Validate(val T) (ok bool, err error) {
 }
 
 // ValidatedValue stores a value and validates updates with the provided Validator.
-type ValidatedValue[T cmp.Ordered] struct {
+type ValidatedValue[T any] struct {
 	value     T
 	Validator Validator[T]
 }

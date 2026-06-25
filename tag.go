@@ -16,7 +16,7 @@ func init() {
 
 // ValidateStruct validates struct fields using the "val" tag directives.
 // Additional tagex.Tag values can be provided to process more tags in the same pass.
-func ValidateStruct(data interface{}, tags ...*tagex.Tag) (bool, error) {
+func ValidateStruct(data any, tags ...*tagex.Tag) (bool, error) {
 	tags = append(tags, &tag)
 	return tagex.ProcessStruct(data, tags...)
 }
