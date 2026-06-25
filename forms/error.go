@@ -13,6 +13,8 @@ type Error struct {
 	Err    error
 }
 
+// Error returns the wrapped error's message, or a generic message when no inner
+// error is set.
 func (e *Error) Error() string {
 	if e == nil || e.Err == nil {
 		return "forms: validation failed"
@@ -20,6 +22,8 @@ func (e *Error) Error() string {
 	return e.Err.Error()
 }
 
+// Unwrap returns the wrapped error so that errors.Is and errors.As can inspect
+// the underlying validation or binding failure.
 func (e *Error) Unwrap() error {
 	if e == nil {
 		return nil

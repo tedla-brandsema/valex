@@ -1,5 +1,8 @@
 # Valex
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/tedla-brandsema/valex.svg)](https://pkg.go.dev/github.com/tedla-brandsema/valex)
+[![CI](https://github.com/tedla-brandsema/valex/actions/workflows/ci.yml/badge.svg)](https://github.com/tedla-brandsema/valex/actions/workflows/ci.yml)
+
 *Valex* is an extensible validation library for Go. It pairs a small, dependency-light
 validation **engine** with opt-in packages for a ready-made directive catalog and HTTP
 form binding, so you depend only on what you use.
