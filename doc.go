@@ -14,4 +14,12 @@
 // need with RegisterDirective. HTTP request binding and validation live in the
 // github.com/tedla-brandsema/valex/forms subpackage, which keeps net/http out of
 // the core engine.
+//
+// # Concurrency
+//
+// RegisterDirective and ValidateStruct are safe for concurrent use: the "val"
+// tag's directive registry is guarded by a mutex, and ValidateStruct only reads
+// it. The intended pattern is to register directives once at startup (typically
+// in an init function) and validate from many goroutines thereafter. Registering
+// while other goroutines validate is safe but unusual.
 package valex

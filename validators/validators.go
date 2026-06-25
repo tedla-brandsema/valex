@@ -325,16 +325,6 @@ func (v *NonEmptyStringValidator) Handle(val string) (string, error) {
 	return val, err
 }
 
-// NonEmptyStringAliasValidator provides the legacy "nonempty" tag.
-type NonEmptyStringAliasValidator struct {
-	NonEmptyStringValidator
-}
-
-// Name returns the directive identifier.
-func (v *NonEmptyStringAliasValidator) Name() string {
-	return "nonempty"
-}
-
 // MinLengthValidator validates that a string meets a minimum length.
 type MinLengthValidator struct {
 	Size int `param:"size"`
@@ -859,26 +849,6 @@ func (v *NonZeroFloat64Validator) Handle(val float64) (float64, error) {
 	return val, err
 }
 
-// NonZeroFloat64AliasValidator provides the "nonzerofloat" tag.
-type NonZeroFloat64AliasValidator struct {
-	NonZeroFloat64Validator
-}
-
-// Name returns the directive identifier.
-func (v *NonZeroFloat64AliasValidator) Name() string {
-	return "nonzerofloat"
-}
-
-// NonZeroIntAliasValidator provides the "nonzeroint" tag.
-type NonZeroIntAliasValidator struct {
-	NonZeroIntValidator
-}
-
-// Name returns the directive identifier.
-func (v *NonZeroIntAliasValidator) Name() string {
-	return "nonzeroint"
-}
-
 // NonZeroTimeValidator validates that a time.Time is not zero.
 type NonZeroTimeValidator struct{}
 
@@ -904,16 +874,6 @@ func (v *NonZeroTimeValidator) Mode() tagex.DirectiveMode {
 func (v *NonZeroTimeValidator) Handle(val time.Time) (time.Time, error) {
 	err := v.Validate(val)
 	return val, err
-}
-
-// NonZeroTimeAliasValidator provides the legacy "nonzerotime" tag.
-type NonZeroTimeAliasValidator struct {
-	NonZeroTimeValidator
-}
-
-// Name returns the directive identifier.
-func (v *NonZeroTimeAliasValidator) Name() string {
-	return "nonzerotime"
 }
 
 // TimeBeforeValidator validates that a time.Time is before the configured time.
@@ -1109,16 +1069,6 @@ func (v *NonZeroDurationValidator) Handle(val time.Duration) (time.Duration, err
 	return val, err
 }
 
-// NonZeroDurationAliasValidator provides the "nonzeroduration" tag.
-type NonZeroDurationAliasValidator struct {
-	NonZeroDurationValidator
-}
-
-// Name returns the directive identifier.
-func (v *NonZeroDurationAliasValidator) Name() string {
-	return "nonzeroduration"
-}
-
 // NonZeroIPValidator validates that a net.IP is not zero or unspecified.
 type NonZeroIPValidator struct{}
 
@@ -1144,16 +1094,6 @@ func (v *NonZeroIPValidator) Mode() tagex.DirectiveMode {
 func (v *NonZeroIPValidator) Handle(val net.IP) (net.IP, error) {
 	err := v.Validate(val)
 	return val, err
-}
-
-// NonZeroIPAliasValidator provides the "nonzeroip" tag.
-type NonZeroIPAliasValidator struct {
-	NonZeroIPValidator
-}
-
-// Name returns the directive identifier.
-func (v *NonZeroIPAliasValidator) Name() string {
-	return "nonzeroip"
 }
 
 // IPRangeValidator validates that a net.IP is within an inclusive range.
@@ -1242,16 +1182,6 @@ func (v *NonZeroURLValidator) Mode() tagex.DirectiveMode {
 func (v *NonZeroURLValidator) Handle(val url.URL) (url.URL, error) {
 	err := v.Validate(val)
 	return val, err
-}
-
-// NonZeroURLAliasValidator provides the "nonzerourl" tag.
-type NonZeroURLAliasValidator struct {
-	NonZeroURLValidator
-}
-
-// Name returns the directive identifier.
-func (v *NonZeroURLAliasValidator) Name() string {
-	return "nonzerourl"
 }
 
 // OneOfFloat64Validator validates that a float64 matches one of the configured values.

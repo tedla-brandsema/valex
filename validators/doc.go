@@ -18,69 +18,69 @@
 //
 // Parameters are supplied in the tag after the directive name
 // (for example "rangeint,min=0,max=120"). Where a directive takes a list, the
-// values are pipe-separated (for example "oneof,values=a|b|c"). Directives whose
-// names begin with "!" also have a plain-word alias, noted in the catalog below.
+// values are pipe-separated (for example "oneof,values=a|b|c").
 //
 // # Catalog
 //
-// The "val" tag directives, grouped by the Go type of the field they validate:
+// The "val" tag directives, grouped by the Go type of the field they validate.
+// The Registers column names the type to pass to valex.RegisterDirective.
 //
-//	Tag            Type            Params       Description
-//	-------------- --------------- ------------ -------------------------------------
+//	Tag            Registers                     Params       Description
+//	-------------- ----------------------------- ------------ ------------------------------------
 //	-- int --
-//	rangeint       int             min, max     inclusive range
-//	minint         int             min          value >= min
-//	maxint         int             max          value <= max
-//	posint         int             -            non-negative
-//	negint         int             -            non-positive
-//	!zeroint       int             -            not zero (alias: nonzeroint)
-//	oneofint       int             values       one of a pipe-separated list
+//	rangeint       IntRangeValidator             min, max     inclusive range
+//	minint         MinIntValidator               min          value >= min
+//	maxint         MaxIntValidator               max          value <= max
+//	posint         NonNegativeIntValidator       -            non-negative
+//	negint         NonPositiveIntValidator       -            non-positive
+//	!zeroint       NonZeroIntValidator           -            not zero
+//	oneofint       OneOfIntValidator             values       one of a pipe-separated list
 //	-- float64 --
-//	rangefloat     float64         min, max     inclusive range
-//	minfloat       float64         min          value >= min
-//	maxfloat       float64         max          value <= max
-//	posfloat       float64         -            non-negative
-//	negfloat       float64         -            non-positive
-//	!zerofloat     float64         -            not zero (alias: nonzerofloat)
-//	oneoffloat     float64         values       one of a pipe-separated list
+//	rangefloat     Float64RangeValidator         min, max     inclusive range
+//	minfloat       MinFloat64Validator           min          value >= min
+//	maxfloat       MaxFloat64Validator           max          value <= max
+//	posfloat       NonNegativeFloat64Validator   -            non-negative
+//	negfloat       NonPositiveFloat64Validator   -            non-positive
+//	!zerofloat     NonZeroFloat64Validator       -            not zero
+//	oneoffloat     OneOfFloat64Validator         values       one of a pipe-separated list
 //	-- string --
-//	url            string          -            valid absolute URL
-//	email          string          -            valid email address
-//	!empty         string          -            non-empty (alias: nonempty)
-//	min            string          size         length >= size
-//	max            string          size         length <= size
-//	len            string          min, max     length within [min, max]
-//	regex          string          pattern      matches regular expression
-//	prefix         string          value        has prefix
-//	suffix         string          value        has suffix
-//	contains       string          value        contains substring
-//	oneof          string          values       one of a pipe-separated list
-//	alphanum       string          -            alphanumeric
-//	mac            string          -            valid MAC address
-//	ip             string          -            valid IP address
-//	ipv4           string          -            valid IPv4 address
-//	ipv6           string          -            valid IPv6 address
-//	hostname       string          -            valid hostname
-//	cidr           string          -            valid CIDR notation
-//	uuid           string          version (4)  RFC 4122 UUID, optional version
-//	base64         string          -            valid base64 (standard or raw)
-//	hex            string          -            valid hex (optional 0x prefix)
-//	xml            string          -            well-formed XML
-//	json           string          -            valid JSON
-//	time           string          format       valid time for the layout (default RFC3339)
+//	url            UrlValidator                  -            valid absolute URL
+//	email          EmailValidator                -            valid email address
+//	!empty         NonEmptyStringValidator       -            non-empty
+//	min            MinLengthValidator            size         length >= size
+//	max            MaxLengthValidator            size         length <= size
+//	len            LengthRangeValidator          min, max     length within [min, max]
+//	regex          RegexValidator                pattern      matches regular expression
+//	prefix         PrefixValidator               value        has prefix
+//	suffix         SuffixValidator               value        has suffix
+//	contains       ContainsValidator             value        contains substring
+//	oneof          OneOfStringValidator          values       one of a pipe-separated list
+//	alphanum       AlphaNumericValidator         -            alphanumeric
+//	mac            MACAddressValidator           -            valid MAC address
+//	ip             IpValidator                   -            valid IP address
+//	ipv4           IPv4Validator                 -            valid IPv4 address
+//	ipv6           IPv6Validator                 -            valid IPv6 address
+//	hostname       HostnameValidator             -            valid hostname
+//	cidr           IPCIDRValidator               -            valid CIDR notation
+//	uuid           UUIDValidator                 version (4)  RFC 4122 UUID, optional version
+//	base64         Base64Validator               -            valid base64 (standard or raw)
+//	hex            HexValidator                  -            valid hex (optional 0x prefix)
+//	xml            XMLValidator                  -            well-formed XML
+//	json           JSONValidator                 -            valid JSON
+//	time           TimeValidator                 format       valid time for the layout (default RFC3339)
 //	-- time.Time --
-//	!zerotime      time.Time       -            not zero (alias: nonzerotime)
-//	beforetime     time.Time       before       before the given RFC3339 time
-//	aftertime      time.Time       after        after the given RFC3339 time
-//	betweentime    time.Time       start, end   within [start, end] (RFC3339)
+//	!zerotime      NonZeroTimeValidator          -            not zero
+//	beforetime     TimeBeforeValidator           before       before the given RFC3339 time
+//	aftertime      TimeAfterValidator            after        after the given RFC3339 time
+//	betweentime    TimeBetweenValidator          start, end   within [start, end] (RFC3339)
 //	-- time.Duration --
-//	posduration    time.Duration   -            positive
-//	!zeroduration  time.Duration   -            not zero (alias: nonzeroduration)
+//	posduration    PositiveDurationValidator     -            positive
+//	!zeroduration  NonZeroDurationValidator      -            not zero
 //	-- net.IP --
-//	!zeroip        net.IP          -            not zero/unspecified (alias: nonzeroip)
-//	iprange        net.IP          start, end   within [start, end]
+//	!zeroip        NonZeroIPValidator            -            not zero/unspecified
+//	iprange        IPRangeValidator              start, end   within [start, end]
 //	-- url.URL --
-//	!zerourl       url.URL         -            not the zero value (alias: nonzerourl)
+//	!zerourl       NonZeroURLValidator           -            not the zero value
 //
 // Alongside the tag directives, the package also offers generic programmatic
 // validators that are not registered with the "val" tag: CmpRangeValidator and

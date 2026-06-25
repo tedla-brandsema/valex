@@ -200,7 +200,7 @@ From `github.com/tedla-brandsema/valex/validators`. Register each with
 | `MaxIntValidator` | `int` | `maxint` | `max` | Int `<= max`. |
 | `NonNegativeIntValidator` | `int` | `posint` | - | Int is non-negative. |
 | `NonPositiveIntValidator` | `int` | `negint` | - | Int is non-positive. |
-| `NonZeroIntValidator` | `int` | `!zeroint` (alias: `nonzeroint`) | - | Int is not zero. |
+| `NonZeroIntValidator` | `int` | `!zeroint` | - | Int is not zero. |
 | `OneOfIntValidator` | `int` | `oneofint` | `values` | Int is in `values` (pipe-separated). |
 | **Float64** |  |  |  |  |
 | `Float64RangeValidator` | `float64` | `rangefloat` | `min`, `max` | Inclusive float64 range. |
@@ -208,12 +208,12 @@ From `github.com/tedla-brandsema/valex/validators`. Register each with
 | `MaxFloat64Validator` | `float64` | `maxfloat` | `max` | Float64 `<= max`. |
 | `NonNegativeFloat64Validator` | `float64` | `posfloat` | - | Float64 is non-negative. |
 | `NonPositiveFloat64Validator` | `float64` | `negfloat` | - | Float64 is non-positive. |
-| `NonZeroFloat64Validator` | `float64` | `!zerofloat` (alias: `nonzerofloat`) | - | Float64 is not zero. |
+| `NonZeroFloat64Validator` | `float64` | `!zerofloat` | - | Float64 is not zero. |
 | `OneOfFloat64Validator` | `float64` | `oneoffloat` | `values` | Float64 is in `values` (pipe-separated). |
 | **Strings** |  |  |  |  |
 | `UrlValidator` | `string` | `url` | - | Valid absolute URL. |
 | `EmailValidator` | `string` | `email` | - | Valid email address. |
-| `NonEmptyStringValidator` | `string` | `!empty` (alias: `nonempty`) | - | String is not empty. |
+| `NonEmptyStringValidator` | `string` | `!empty` | - | String is not empty. |
 | `MinLengthValidator` | `string` | `min` | `size` | String length `>= size`. |
 | `MaxLengthValidator` | `string` | `max` | `size` | String length `<= size`. |
 | `LengthRangeValidator` | `string` | `len` | `min`, `max` | String length in inclusive range. |
@@ -236,18 +236,18 @@ From `github.com/tedla-brandsema/valex/validators`. Register each with
 | `JSONValidator` | `string` | `json` | - | Valid JSON. |
 | `TimeValidator` | `string` | `time` | `format` (`RFC3339`) | Valid time for layout (built-in name or raw layout). |
 | **Time** |  |  |  |  |
-| `NonZeroTimeValidator` | `time.Time` | `!zerotime` (alias: `nonzerotime`) | - | Time is not zero. |
+| `NonZeroTimeValidator` | `time.Time` | `!zerotime` | - | Time is not zero. |
 | `TimeBeforeValidator` | `time.Time` | `beforetime` | `before` | Time is before the configured time (RFC3339). |
 | `TimeAfterValidator` | `time.Time` | `aftertime` | `after` | Time is after the configured time (RFC3339). |
 | `TimeBetweenValidator` | `time.Time` | `betweentime` | `start`, `end` | Time is within the inclusive range (RFC3339). |
 | **Duration** |  |  |  |  |
 | `PositiveDurationValidator` | `time.Duration` | `posduration` | - | Duration is positive. |
-| `NonZeroDurationValidator` | `time.Duration` | `!zeroduration` (alias: `nonzeroduration`) | - | Duration is not zero. |
+| `NonZeroDurationValidator` | `time.Duration` | `!zeroduration` | - | Duration is not zero. |
 | **IP** |  |  |  |  |
-| `NonZeroIPValidator` | `net.IP` | `!zeroip` (alias: `nonzeroip`) | - | IP is not zero or unspecified. |
+| `NonZeroIPValidator` | `net.IP` | `!zeroip` | - | IP is not zero or unspecified. |
 | `IPRangeValidator` | `net.IP` | `iprange` | `start`, `end` | IP is within the inclusive range. |
 | **URL** |  |  |  |  |
-| `NonZeroURLValidator` | `url.URL` | `!zerourl` (alias: `nonzerourl`) | - | URL is not the zero value. |
+| `NonZeroURLValidator` | `url.URL` | `!zerourl` | - | URL is not the zero value. |
 
 ## License
 
