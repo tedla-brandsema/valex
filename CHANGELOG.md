@@ -30,6 +30,8 @@ thereafter require a major bump.
   `*valex.Registry` instead of the default — so isolated form validation stays a
   single call and keeps the `*forms.Error` status wrapping. `forms.New` /
   `forms.Validate` are unchanged and use the default registry.
+- Fuzz coverage for the `forms` binding path (`FuzzBind`), the only place
+  untrusted input enters the library.
 
 ## [0.1.0] - 2026-06-26
 
