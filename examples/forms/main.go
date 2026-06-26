@@ -22,8 +22,8 @@ type Signup struct {
 }
 
 func init() {
-	valex.RegisterDirective(&validators.MinLengthValidator{})
-	valex.RegisterDirective(&validators.EmailValidator{})
+	valex.MustRegisterDirective(&validators.MinLengthValidator{})
+	valex.MustRegisterDirective(&validators.EmailValidator{})
 }
 
 func submit(name, email string) {

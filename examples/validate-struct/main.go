@@ -11,9 +11,9 @@ import (
 
 // Register the directives the struct uses. The engine ships none of its own.
 func init() {
-	valex.RegisterDirective(&validators.MinLengthValidator{})
-	valex.RegisterDirective(&validators.EmailValidator{})
-	valex.RegisterDirective(&validators.IntRangeValidator{})
+	valex.MustRegisterDirective(&validators.MinLengthValidator{})
+	valex.MustRegisterDirective(&validators.EmailValidator{})
+	valex.MustRegisterDirective(&validators.IntRangeValidator{})
 }
 
 type User struct {

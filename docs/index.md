@@ -8,7 +8,7 @@ The library is split into three packages:
 
 | Package | What it gives you |
 | --- | --- |
-| `valex` | the engine: `Validator[T]`, `ValidatorFunc[T]`, `ValidatedValue[T]`, `MustValidate`, the `val` struct tag (`ValidateStruct`, `RegisterDirective`), and re-exported error types. |
+| `valex` | the engine: `Validator[T]`, `ValidatorFunc[T]`, `ValidatedValue[T]`, `MustValidate`, the `val` struct tag (`ValidateStruct`, `RegisterDirective`, `MustRegisterDirective`), and re-exported error types. |
 | `valex/validators` | a catalog of ready-made `val` directives (ranges, lengths, URLs, emails, IPs, time, JSON/XML, regex, …), registered opt-in. |
 | `valex/forms` | binds `net/http` request values into structs and validates them, kept separate so the core never imports `net/http`. |
 

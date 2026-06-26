@@ -9,7 +9,7 @@
 // Two struct tags are involved. The "field" tag maps a struct field to a request
 // value and controls binding; the "val" tag (from the valex engine) validates the
 // bound value. Validation directives are opt-in and must be registered with
-// valex.RegisterDirective — for example from the valex/validators subpackage.
+// valex.MustRegisterDirective — for example from the valex/validators subpackage.
 //
 //	type Signup struct {
 //		Name  string `field:"name" val:"min,size=3"`

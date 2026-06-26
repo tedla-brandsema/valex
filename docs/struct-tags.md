@@ -36,15 +36,19 @@ The engine ships **no** directives. Register the ones you use — once, at start
 
 ```go
 func init() {
-	valex.RegisterDirective(&validators.EmailValidator{})
-	valex.RegisterDirective(&validators.IntRangeValidator{})
+	valex.MustRegisterDirective(&validators.EmailValidator{})
+	valex.MustRegisterDirective(&validators.IntRangeValidator{})
 }
 ```
 
-`RegisterDirective[T]` infers `T` from the directive, so the call site needs no
-type argument. Registering is the only operation that mutates the `val` tag's
-registry; once registered, `ValidateStruct` is safe to call from many goroutines
-(see [Concurrency](#concurrency)).
+`MustRegisterDirective[T]` infers `T` from the directive, so the call site needs
+no type argument. It panics if the directive's name is blank
+(`*EmptyDirectiveNameError`) or already registered (`*DuplicateDirectiveError`) —
+both setup-time programming mistakes, so failing fast at startup is what you
+want. Use `RegisterDirective`, which returns that error instead of panicking, if
+you register dynamically and need to handle it. Registering is the only operation
+that mutates the `val` tag's registry; once registered, `ValidateStruct` is safe
+to call from many goroutines (see [Concurrency](#concurrency)).
 
 ## The catalog
 
@@ -136,7 +140,7 @@ func (*EvenDirective) Handle(n int) (int, error) {
 	return n, nil
 }
 
-valex.RegisterDirective(&EvenDirective{})
+valex.MustRegisterDirective(&EvenDirective{})
 // type Ticket struct { Seats int `val:"even"` }
 ```
 

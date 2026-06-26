@@ -23,7 +23,7 @@ func (*EvenDirective) Handle(n int) (int, error) {
 }
 
 func main() {
-	valex.RegisterDirective(&EvenDirective{})
+	valex.MustRegisterDirective(&EvenDirective{})
 
 	type Ticket struct {
 		Seats int `val:"even"`

@@ -23,9 +23,9 @@ import (
 )
 
 func init() {
-	valex.RegisterDirective(&validators.MinLengthValidator{})
-	valex.RegisterDirective(&validators.EmailValidator{})
-	valex.RegisterDirective(&validators.IntRangeValidator{})
+	valex.MustRegisterDirective(&validators.MinLengthValidator{})
+	valex.MustRegisterDirective(&validators.EmailValidator{})
+	valex.MustRegisterDirective(&validators.IntRangeValidator{})
 }
 ```
 

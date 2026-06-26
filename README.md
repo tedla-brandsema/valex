@@ -11,7 +11,7 @@ form binding, so you depend only on what you use.
 
 | Import | Responsibility |
 | --- | --- |
-| `github.com/tedla-brandsema/valex` | The engine: the `Validator[T]` interface and `ValidatorFunc[T]` adapter, the `ValidatedValue[T]` wrapper, `MustValidate`, the `val` struct tag (`ValidateStruct`), `RegisterDirective`, and re-exported error types. |
+| `github.com/tedla-brandsema/valex` | The engine: the `Validator[T]` interface and `ValidatorFunc[T]` adapter, the `ValidatedValue[T]` wrapper, `MustValidate`, the `val` struct tag (`ValidateStruct`), `RegisterDirective` / `MustRegisterDirective`, and re-exported error types. |
 | `github.com/tedla-brandsema/valex/validators` | A catalog of ready-made `val` directives (ranges, lengths, URLs, emails, IPs, time, JSON/XML, regex, …). Directives are **opt-in** — you register the ones you want. |
 | `github.com/tedla-brandsema/valex/forms` | Bind `net/http` request values into structs and validate them. Kept separate so the core engine never imports `net/http`. |
 
@@ -21,13 +21,15 @@ form binding, so you depend only on what you use.
 * **Validated value wrapper** — `ValidatedValue[T]` only stores values that pass validation.
 * **Tag-based validation** — validate struct fields with the `val` tag and `ValidateStruct`.
 * **Opt-in directive catalog** — register only the directives you need from `valex/validators`.
-* **Custom directives** — extend the `val` tag with `RegisterDirective`.
+* **Custom directives** — extend the `val` tag with `RegisterDirective` (or `MustRegisterDirective` to fail fast at startup).
 * **HTTP form binding** — parse and validate requests with `valex/forms`.
 * **Inspectable errors** — error types are re-exported from the engine, so you handle them without importing `tagex`.
 
 ## Installation
 
-```
+Requires **Go 1.22** or later.
+
+```bash
 go get -u github.com/tedla-brandsema/valex@latest
 ```
 
@@ -79,9 +81,9 @@ import (
 )
 
 func init() {
-	valex.RegisterDirective(&validators.MinLengthValidator{})
-	valex.RegisterDirective(&validators.EmailValidator{})
-	valex.RegisterDirective(&validators.IntRangeValidator{})
+	valex.MustRegisterDirective(&validators.MinLengthValidator{})
+	valex.MustRegisterDirective(&validators.EmailValidator{})
+	valex.MustRegisterDirective(&validators.IntRangeValidator{})
 }
 
 type User struct {
@@ -127,7 +129,7 @@ func (d *EvenDirective) Handle(val int) (int, error) {
 }
 
 func main() {
-	valex.RegisterDirective(&EvenDirective{})
+	valex.MustRegisterDirective(&EvenDirective{})
 
 	type Item struct {
 		Count int `val:"even"`
@@ -271,6 +273,12 @@ From `github.com/tedla-brandsema/valex/validators`. Register each with
 | `IPRangeValidator` | `net.IP` | `iprange` | `start`, `end` | IP is within the inclusive range. |
 | **URL** |  |  |  |  |
 | `NonZeroURLValidator` | `url.URL` | `!zerourl` | - | URL is not the zero value. |
+
+## Status
+
+Valex is **pre-1.0 (0.x)**: the API is still settling, and breaking changes bump
+the minor version. See the [changelog](CHANGELOG.md) for what changed and the
+full stability policy, and pin a version.
 
 ## License
 

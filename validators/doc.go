@@ -3,11 +3,11 @@
 //
 // Directives are opt-in: importing this package registers nothing on its own.
 // Register the ones you need against valex's "val" tag with
-// valex.RegisterDirective, then validate with valex.ValidateStruct (or the
+// valex.MustRegisterDirective, then validate with valex.ValidateStruct (or the
 // valex/forms helpers):
 //
-//	valex.RegisterDirective(&validators.EmailValidator{})
-//	valex.RegisterDirective(&validators.IntRangeValidator{})
+//	valex.MustRegisterDirective(&validators.EmailValidator{})
+//	valex.MustRegisterDirective(&validators.IntRangeValidator{})
 //
 //	type User struct {
 //		Email string `val:"email"`
