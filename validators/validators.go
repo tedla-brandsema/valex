@@ -1204,20 +1204,13 @@ func (v *OneOfFloat64Validator) Mode() tagex.DirectiveMode {
 
 // ConvertParam parses the values parameter.
 func (v *OneOfFloat64Validator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
-	if fieldValue.Type() != reflect.TypeOf([]float64{}) {
-		return tagex.NewConversionError(field, raw, "[]float64")
-	}
-	items := splitList(raw)
-	vals := make([]float64, 0, len(items))
-	for _, item := range items {
+	return parsePipeList(field, fieldValue, raw, func(item string) (float64, error) {
 		f, err := strconv.ParseFloat(item, 64)
 		if err != nil {
-			return fmt.Errorf("invalid float %q", item)
+			return 0, fmt.Errorf("invalid float %q", item)
 		}
-		vals = append(vals, f)
-	}
-	fieldValue.Set(reflect.ValueOf(vals))
-	return nil
+		return f, nil
+	})
 }
 
 // Handle validates the value and returns it unchanged.
@@ -1248,12 +1241,9 @@ func (v *OneOfStringValidator) Mode() tagex.DirectiveMode {
 
 // ConvertParam parses the values parameter.
 func (v *OneOfStringValidator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
-	if fieldValue.Type() != reflect.TypeOf([]string{}) {
-		return tagex.NewConversionError(field, raw, "[]string")
-	}
-	items := splitList(raw)
-	fieldValue.Set(reflect.ValueOf(items))
-	return nil
+	return parsePipeList(field, fieldValue, raw, func(item string) (string, error) {
+		return item, nil
+	})
 }
 
 // Handle validates the value and returns it unchanged.
@@ -1284,20 +1274,13 @@ func (v *OneOfIntValidator) Mode() tagex.DirectiveMode {
 
 // ConvertParam parses the values parameter.
 func (v *OneOfIntValidator) ConvertParam(field reflect.StructField, fieldValue reflect.Value, raw string) error {
-	if fieldValue.Type() != reflect.TypeOf([]int{}) {
-		return tagex.NewConversionError(field, raw, "[]int")
-	}
-	items := splitList(raw)
-	vals := make([]int, 0, len(items))
-	for _, item := range items {
+	return parsePipeList(field, fieldValue, raw, func(item string) (int, error) {
 		i, err := strconv.Atoi(item)
 		if err != nil {
-			return fmt.Errorf("invalid int %q", item)
+			return 0, fmt.Errorf("invalid int %q", item)
 		}
-		vals = append(vals, i)
-	}
-	fieldValue.Set(reflect.ValueOf(vals))
-	return nil
+		return i, nil
+	})
 }
 
 // Handle validates the value and returns it unchanged.
@@ -1688,6 +1671,26 @@ func splitList(raw string) []string {
 		out = append(out, item)
 	}
 	return out
+}
+
+// parsePipeList converts a pipe-separated raw value into a []T and stores it in
+// fieldValue, after checking the field is a []T. It is the shared body of the
+// OneOf* directives' ConvertParam.
+func parsePipeList[T any](field reflect.StructField, fieldValue reflect.Value, raw string, conv func(string) (T, error)) error {
+	if fieldValue.Type() != reflect.TypeOf([]T(nil)) {
+		return tagex.NewConversionError(field, raw, fmt.Sprintf("%T", []T(nil)))
+	}
+	items := splitList(raw)
+	vals := make([]T, 0, len(items))
+	for _, item := range items {
+		v, err := conv(item)
+		if err != nil {
+			return err
+		}
+		vals = append(vals, v)
+	}
+	fieldValue.Set(reflect.ValueOf(vals))
+	return nil
 }
 
 func parseTimeParam(raw string) (time.Time, error) {
