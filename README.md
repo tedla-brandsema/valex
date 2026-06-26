@@ -183,6 +183,29 @@ if err != nil {
 }
 ```
 
+## Examples
+
+Runnable programs in [examples/](examples/) — run one with `go run ./examples/<name>`:
+
+- [programmatic](examples/programmatic/) — validate values in code with `ValidatorFunc` and `ValidatedValue`, no tags.
+- [validate-struct](examples/validate-struct/) — register catalog directives and validate a struct with the `val` tag.
+- [custom-directive](examples/custom-directive/) — extend the `val` tag with your own directive.
+- [forms](examples/forms/) — bind and validate an `net/http` request with `valex/forms`.
+
+## Documentation
+
+Full documentation is in [docs/](docs/index.md):
+
+- [Quick start](docs/quick-start.md) — install, register a directive, validate a struct.
+- [Programmatic validation](docs/programmatic.md) — `Validator[T]`, `ValidatorFunc[T]`, `ValidatedValue[T]`, `MustValidate`.
+- [Struct-tag validation](docs/struct-tags.md) — the `val` tag, the validators catalog, and custom directives.
+- [HTTP forms](docs/forms.md) — bind and validate `net/http` requests.
+- [Errors](docs/errors.md) — the re-exported typed error model.
+
+Package reference and Go testable examples render on
+[pkg.go.dev](https://pkg.go.dev/github.com/tedla-brandsema/valex). Working notes
+and deferred decisions live in [TODO.md](TODO.md).
+
 ## Built-in directives
 
 From `github.com/tedla-brandsema/valex/validators`. Register each with
