@@ -486,13 +486,11 @@ func (v *RegexValidator) Handle(val string) (string, error) {
 // AlphaNumericValidator validates that a string contains only alphanumeric characters.
 type AlphaNumericValidator struct{}
 
+var alphaNumericPattern = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
+
 // Validate checks whether the value is alphanumeric.
 func (v *AlphaNumericValidator) Validate(val string) error {
-	matched, err := regexp.MatchString(`^[a-zA-Z0-9]+$`, val)
-	if err != nil {
-		return err
-	}
-	if !matched {
+	if !alphaNumericPattern.MatchString(val) {
 		return fmt.Errorf("value %q is not alphanumeric", val)
 	}
 	return nil
@@ -1410,10 +1408,11 @@ type UUIDValidator struct {
 	Version int `param:"version,required=false"`
 }
 
+var uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-([0-9a-fA-F])[0-9a-fA-F]{3}-([0-9a-fA-F])[0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
+
 // Validate checks whether the value is a UUID.
 func (v *UUIDValidator) Validate(val string) error {
-	re := regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-([0-9a-fA-F])[0-9a-fA-F]{3}-([0-9a-fA-F])[0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
-	matches := re.FindStringSubmatch(val)
+	matches := uuidPattern.FindStringSubmatch(val)
 	if matches == nil {
 		return fmt.Errorf("value %q is not a valid UUID", val)
 	}
