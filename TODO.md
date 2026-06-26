@@ -66,3 +66,29 @@ _(nothing in flight)_
   isolation. The escape hatch documented in `docs/struct-tags.md` (build a
   `tagex.NewTag("val")` and use `tagex.ProcessStruct`) covers that case today
   with no valex change.
+
+- **The per-validator `Name`/`Mode`/`Handle` boilerplate (and the int/float64
+  twins) stays — it is deliberate, not debt.**
+  Every catalog directive repeats an identical `Mode()` returning `EvalMode` and
+  a `Handle()` that delegates to `Validate`, and the ordered-type families
+  (Range, Min, Max, NonNegative, NonPositive, NonZero, OneOf) exist once for
+  `int` and once for `float64`. A line-count audit flags this as ~450 lines to
+  cut with a generic eval-adapter and `cmp.Ordered` generics. We are not doing
+  it, on purpose:
+  - **Boring beats clever.** Each validator is a flat, self-contained, greppable
+    unit you can read top to bottom. A generic adapter trades that for
+    indirection you decode at 3am.
+  - **It would churn the public API.** Directives are registered as themselves
+    (`RegisterDirective(&EmailValidator{})`); they implement `tagex.Directive`
+    directly. An adapter that supplies `Mode`/`Handle` means the types stop being
+    directives, changing registration. Go embedding doesn't dispatch to the
+    concrete `Validate`, so there's no free lunch via embedding either.
+  - **The generic collapse barely pays.** Per-`T` `Name()` and tag-arg
+    conversion still need concrete types, so collapsing the int/float64 twins
+    saves only the comparison bodies (~20 lines), not the structs or the
+    `Name`/`Mode`/`Handle` trio. `CmpRangeValidator[T cmp.Ordered]` already
+    exists for callers who want the generic form programmatically.
+
+  In a ~50-entry catalog, uniform, dumb repetition is a feature: predictable,
+  diff-friendly, and impossible to get subtly wrong. Revisit only if a validator
+  ever needs `MutMode` or genuinely divergent dispatch.
