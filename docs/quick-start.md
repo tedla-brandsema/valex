@@ -5,7 +5,7 @@ This guide validates a struct with the `val` tag using directives from the
 
 ## Before you begin
 
-- Go 1.25 or later.
+- Go 1.22 or later.
 
 ```bash
 go get github.com/tedla-brandsema/valex@latest
