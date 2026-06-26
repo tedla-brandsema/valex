@@ -7,9 +7,10 @@ import (
 	"github.com/tedla-brandsema/valex"
 )
 
-// Error wraps a validation error with an HTTP status code.
+// Error wraps a validation error with an HTTP status code. Read the status with
+// StatusCode and the underlying error with Unwrap.
 type Error struct {
-	Status int
+	status int
 	Err    error
 }
 
@@ -36,7 +37,7 @@ func (e *Error) StatusCode() int {
 	if e == nil {
 		return 0
 	}
-	return e.Status
+	return e.status
 }
 
 // Status maps validation errors to HTTP status codes.
@@ -59,7 +60,7 @@ func Status(err error) int {
 func Validate(r *http.Request, dst any) error {
 	validator, err := New(r)
 	if err != nil {
-		return &Error{Status: http.StatusBadRequest, Err: err}
+		return &Error{status: http.StatusBadRequest, Err: err}
 	}
 	return validator.Validate(dst)
 }

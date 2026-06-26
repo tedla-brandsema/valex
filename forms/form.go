@@ -43,10 +43,10 @@ func New(r *http.Request) (*Validator, error) {
 // nil on success, or an *Error carrying an HTTP status code on failure (see Status).
 func (v *Validator) Validate(dst any) error {
 	if err := bindFormValues(dst, v.rawValues); err != nil {
-		return &Error{Status: Status(err), Err: err}
+		return &Error{status: Status(err), Err: err}
 	}
 	if err := valex.ValidateStruct(dst); err != nil {
-		return &Error{Status: Status(err), Err: err}
+		return &Error{status: Status(err), Err: err}
 	}
 	return nil
 }
