@@ -39,6 +39,15 @@ URL query string, so GET requests with query parameters work too. The directives
 referenced by your `val` tags must be registered first (see
 [struct-tags.md](struct-tags.md#registering-directives)).
 
+To validate against an isolated [registry](struct-tags.md#registries) instead of
+the global default — for test isolation, or two differently-configured form
+validators in one process — use `ValidateWith` (or `NewWith` for the reusable
+`Validator`); both still return a `*forms.Error` with its status code:
+
+```go
+err := forms.ValidateWith(r, &in, reg) // reg is a *valex.Registry
+```
+
 ## The field tag
 
 The first token is the request key; the rest are `key=value` options:

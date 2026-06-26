@@ -171,35 +171,37 @@ err := valex.ValidateStruct(&data, otherTag)
 directives once at startup (typically in `init`), then validate from any number
 of goroutines. Registering while other goroutines validate is safe but unusual.
 
-## One global registry
+## Registries
 
-The `val` directives live in a single, process-wide registry — the one behind
-`RegisterDirective`, `MustRegisterDirective`, and `ValidateStruct`. Think of it
-the way you think of `flag.CommandLine` or `http.DefaultServeMux`: **it belongs to
-the application**, not to any one library.
+The package-level `RegisterDirective`, `MustRegisterDirective`, and
+`ValidateStruct` share one process-wide **default registry**. Think of it the way
+you think of `flag.CommandLine` or `http.DefaultServeMux`: **it belongs to the
+application**, not to any one library.
 
-**If you are writing an application**, this is all you need. Register your
-directives once at startup with `MustRegisterDirective` and validate anywhere.
-Registration fails loudly on a duplicate name (`*DuplicateDirectiveError`), so a
-double-registration is caught at boot instead of silently shadowing.
+**If you are writing an application**, use the package-level functions: register
+your directives once at startup with `MustRegisterDirective` and validate
+anywhere. Registration fails loudly on a duplicate name
+(`*DuplicateDirectiveError`), so a double-registration is caught at boot instead
+of silently shadowing.
 
-**If you are writing a library** that validates internally, **do not register on
-the global registry.** It is shared with the importing program and every other
-library in the binary, so if two of them register the same directive name — say
-two libraries that both `MustRegisterDirective(&validators.EmailValidator{})` —
-the second one panics at startup. Bring your own registry instead: the catalog
-validators are plain `tagex.Directive` values, so they register on any tag.
+**If you are writing a library, or you need test isolation**, create your own
+registry with `NewRegistry` instead of touching the global. Each registry has an
+independent directive set, so two of them can hold the same directive name
+without colliding — and a test can spin up a fresh one per case:
 
 ```go
-reg := tagex.NewTag("val")
-tagex.MustRegisterDirective(reg, &validators.EmailValidator{})
+reg := valex.NewRegistry()
+valex.MustRegisterDirectiveTo(reg, &validators.EmailValidator{})
 
-err := tagex.ProcessStruct(&user, reg) // isolated; the global registry is untouched
+err := reg.ValidateStruct(&user) // uses only reg's directives
 ```
 
-Validate with `tagex.ProcessStruct(&data, reg)`, **not** `valex.ValidateStruct(&data, reg)`:
-`ValidateStruct` always *also* applies the global `val` registry, and since both
-tags share the key `val`, every field would be processed by both — and the global
-pass would fail on any directive only `reg` knows. The extra-tags parameter of
-`ValidateStruct` (see [Multiple tags in one pass](#multiple-tags-in-one-pass)) is
-for tags with a *different* key, not for same-key isolation.
+Registration on a registry is the free function `RegisterDirectiveTo` /
+`MustRegisterDirectiveTo` (rather than a method) because Go methods can't have
+type parameters. For isolated **form** validation, pass the registry to `forms`
+— one call, still returning a `*forms.Error` with an HTTP status:
+
+```go
+var in Signup
+err := forms.ValidateWith(r, &in, reg) // bind + validate against reg
+```

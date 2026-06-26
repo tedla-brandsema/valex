@@ -20,6 +20,17 @@ thereafter require a major bump.
 
 ## [Unreleased]
 
+### Added
+- `Registry` and `NewRegistry` for an isolated directive set, with
+  `RegisterDirectiveTo` / `MustRegisterDirectiveTo` and a `ValidateStruct`
+  method. The package-level `RegisterDirective`, `MustRegisterDirective`, and
+  `ValidateStruct` now wrap a shared default registry. Use a `Registry` for test
+  isolation or to run two differently-configured validators in one process.
+- `forms.NewWith` and `forms.ValidateWith`, which validate against a given
+  `*valex.Registry` instead of the default — so isolated form validation stays a
+  single call and keeps the `*forms.Error` status wrapping. `forms.New` /
+  `forms.Validate` are unchanged and use the default registry.
+
 ## [0.1.0] - 2026-06-26
 
 Initial release.

@@ -6,7 +6,33 @@ even when the original conversation doesn't.
 
 ## In Progress
 
-_(nothing in flight)_
+v0.2.0, driven by third-party review feedback (the three things most likely to
+bite an adopter):
+
+- [x] **Instance API for isolation (`NewRegistry`), core *and* forms.** Done.
+  `valex.NewRegistry` gives an independent directive set with `RegisterDirectiveTo`
+  / `MustRegisterDirectiveTo` and a `ValidateStruct` method; the package-level
+  functions now wrap a default registry. `forms.NewWith` / `forms.ValidateWith`
+  take a `*valex.Registry`, so isolated form validation is one call and keeps the
+  `*forms.Error` status wrapping (the original deferral warned forms would need
+  this — it's now covered, not just core). Fixes the test-isolation footgun and
+  lets two differently-configured validators coexist in one process.
+
+- [ ] **Field-keyed multiple errors (the headline).** Today `ValidateStruct`
+  returns only the *first* failure — tagex stops at the first directive error and
+  has no accumulation. A form lib must be able to report "email is invalid AND
+  age must be ≥ 18". This is **tagex-first**: add an accumulate mode to the engine
+  (a tagex v0.5.0), then surface it field-keyed through `valex`/`forms`. Error
+  shape (typed `[]FieldError` with paths vs `errors.Join`) is still undecided —
+  pick before building.
+
+- [ ] **Fuzz the `forms` binding path.** `forms` is the only place untrusted
+  input enters (opposite threat model from tagex's compile-time tags). Add
+  `FuzzBind` / `FuzzSplitFormTag` over adversarial `url.Values`, asserting no
+  panic. Note the surface is narrower than it looks — binding walks the *struct*
+  shape, not the input, so hostile payloads can't drive unbounded recursion;
+  repeated keys are capped by `enforceMax`; oversized bodies are the server's job
+  (`MaxBytesReader`). Cheap insurance against type-confusion panics regardless.
 
 ## Backlog
 
@@ -55,17 +81,6 @@ _(nothing in flight)_
   The in-package pair `forms.Validate` (one-shot func) and `(*Validator).Validate`
   (method) is the same idiom as `http.ListenAndServe`. A rename would churn the
   API for no clarity gain. Not changing.
-
-- **No global-registry instance API (yet); a `valex.NewRegistry` is deferred.**
-  All `val` directives share one process-global registry. An instance type for
-  isolation is awkward in Go (registration is generic in the field type, and
-  methods can't be generic, so it would need free functions like
-  `RegisterDirectiveTo(reg, d)`), and `forms` would also need to accept a
-  registry to be useful. Adding it later is purely additive — new identifiers,
-  no change to the existing API — so it stays out until a real embedder needs
-  isolation. The escape hatch documented in `docs/struct-tags.md` (build a
-  `tagex.NewTag("val")` and use `tagex.ProcessStruct`) covers that case today
-  with no valex change.
 
 - **The per-validator `Name`/`Mode`/`Handle` boilerplate (and the int/float64
   twins) stays — it is deliberate, not debt.**

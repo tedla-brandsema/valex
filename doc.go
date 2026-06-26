@@ -26,17 +26,17 @@
 // in an init function) and validate from many goroutines thereafter. Registering
 // while other goroutines validate is safe but unusual.
 //
-// # Registry
+// # Registries
 //
-// The "val" directives live in a single, process-global registry — like
-// flag.CommandLine or http.DefaultServeMux, it belongs to the application.
-// Applications register once at startup with MustRegisterDirective and validate
-// anywhere.
+// The package-level RegisterDirective, MustRegisterDirective, and ValidateStruct
+// share one process-global default registry — like flag.CommandLine or
+// http.DefaultServeMux, it belongs to the application, which registers once at
+// startup and validates anywhere.
 //
-// Libraries should NOT register on the global registry: it is shared with the
-// importing program and every other library, so two of them registering the same
-// directive name panic at startup under MustRegisterDirective. A library that
-// validates internally should create its own tag with tagex.NewTag("val"),
-// register directives on it, and validate with tagex.ProcessStruct (not
-// ValidateStruct, which always also applies the global registry).
+// Libraries, and tests that need isolation, should create their own with
+// NewRegistry instead of touching the global. Each Registry has an independent
+// directive set, so two can hold the same directive name without colliding.
+// Register on one with the free functions RegisterDirectiveTo /
+// MustRegisterDirectiveTo (free functions because Go methods can't be generic),
+// and validate with its ValidateStruct method.
 package valex

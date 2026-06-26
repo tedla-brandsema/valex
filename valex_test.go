@@ -130,3 +130,30 @@ func TestRegisterDirectiveErrors(t *testing.T) {
 	}()
 	valex.MustRegisterDirective(d)
 }
+
+func TestRegistryIsolation(t *testing.T) {
+	type Box struct {
+		S string `val:"valex_test_regdup"`
+	}
+
+	// Two independent registries hold the same directive name without colliding.
+	a := valex.NewRegistry()
+	b := valex.NewRegistry()
+	if err := valex.RegisterDirectiveTo(a, &regDupDirective{}); err != nil {
+		t.Fatalf("register on a: %v", err)
+	}
+	if err := valex.RegisterDirectiveTo(b, &regDupDirective{}); err != nil {
+		t.Fatalf("register on b (must not collide with a): %v", err)
+	}
+
+	// a knows the directive and validates clean.
+	if err := a.ValidateStruct(&Box{S: "x"}); err != nil {
+		t.Fatalf("a should validate, got %v", err)
+	}
+
+	// A fresh registry does not see a's directives — that is the isolation.
+	c := valex.NewRegistry()
+	if err := c.ValidateStruct(&Box{S: "x"}); err == nil {
+		t.Fatal("empty registry should not know the directive")
+	}
+}

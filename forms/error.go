@@ -55,10 +55,17 @@ func Status(err error) int {
 	return http.StatusBadRequest
 }
 
-// Validate parses the request, binds and validates dst, and returns nil on
-// success or an *Error (with an HTTP status code) on failure.
+// Validate parses the request, binds and validates dst against valex's default
+// registry, and returns nil on success or an *Error (with an HTTP status code)
+// on failure.
 func Validate(r *http.Request, dst any) error {
-	validator, err := New(r)
+	return ValidateWith(r, dst, nil)
+}
+
+// ValidateWith is like Validate but validates against reg instead of the default
+// registry. A nil reg uses the default. Use it for an isolated directive set.
+func ValidateWith(r *http.Request, dst any, reg *valex.Registry) error {
+	validator, err := NewWith(r, reg)
 	if err != nil {
 		return &Error{status: http.StatusBadRequest, Err: err}
 	}

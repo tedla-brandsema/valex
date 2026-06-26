@@ -27,16 +27,25 @@ var ErrFieldRequired = errors.New("field is required")
 // valex "val" tag.
 type Validator struct {
 	rawValues url.Values
+	reg       *valex.Registry // nil uses valex's default registry
 }
 
-// New parses the request and prepares a Validator.
+// New parses the request and prepares a Validator that validates against valex's
+// default registry.
 // ParseForm handles both POST bodies and URL query parameters, so GET requests
 // with query values are supported.
 func New(r *http.Request) (*Validator, error) {
+	return NewWith(r, nil)
+}
+
+// NewWith is like New but validates against reg instead of the default registry.
+// A nil reg uses the default. Use it for an isolated directive set — test
+// isolation, or two differently-configured form validators in one process.
+func NewWith(r *http.Request, reg *valex.Registry) (*Validator, error) {
 	if err := r.ParseForm(); err != nil {
 		return nil, err
 	}
-	return &Validator{rawValues: r.Form}, nil
+	return &Validator{rawValues: r.Form, reg: reg}, nil
 }
 
 // Validate binds form values into dst and validates its "val" tags. It returns
@@ -45,10 +54,19 @@ func (v *Validator) Validate(dst any) error {
 	if err := bindFormValues(dst, v.rawValues); err != nil {
 		return &Error{status: Status(err), Err: err}
 	}
-	if err := valex.ValidateStruct(dst); err != nil {
+	if err := v.validate(dst); err != nil {
 		return &Error{status: Status(err), Err: err}
 	}
 	return nil
+}
+
+// validate runs the "val" directives against the Validator's registry, or the
+// default registry when none was set.
+func (v *Validator) validate(dst any) error {
+	if v.reg != nil {
+		return v.reg.ValidateStruct(dst)
+	}
+	return valex.ValidateStruct(dst)
 }
 
 // Bind binds url.Values into a struct pointer using "field" tags.
