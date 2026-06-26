@@ -81,7 +81,7 @@ you want to separate parsing from validation.
 
 ## Errors
 
-`Validate` wraps every failure in `*forms.Error`:
+`Validate` and `ValidateAll` wrap every failure in `*forms.Error`:
 
 | Method | Returns |
 | --- | --- |
@@ -89,11 +89,33 @@ you want to separate parsing from validation.
 | `Unwrap()` | the underlying error (for `errors.As` / `errors.Is`) |
 | `StatusCode()` | the HTTP status |
 
-`forms.Status(err)` exposes the status mapping for any error: **422** for
-validation failures (a `*valex.TagError`) and missing required fields
-(`ErrFieldRequired`), **400** for binding and parse problems. Because the wrapped
-validation errors are the types [valex re-exports](errors.md), you can inspect
-them with `errors.As` without importing `tagex`.
+`forms.Status(err)` maps errors to a status: **422** for field-level problems —
+a validation failure (`*valex.TagError`) or a binding failure (a value that can't
+convert to the field type, too many values, a missing required field) — and
+**400** for a request that couldn't be parsed at all, or a malformed `field` tag
+(a developer error). A field-level error is 422 whether or not a neighbor also
+failed. Because the wrapped errors are the types [valex re-exports](errors.md),
+inspect them with `errors.As` without importing `tagex`.
+
+### Every error at once
+
+`Validate` stops at the first failure. To report everything wrong with a
+submission, use `ValidateAll` (or `ValidateAllWith`) with `FieldErrors`:
+
+```go
+if err := forms.ValidateAll(r, &in); err != nil {
+	for field, fe := range forms.FieldErrors(err) {
+		fmt.Printf("%s: %v\n", field, fe)
+	}
+}
+```
+
+`FieldErrors` merges binding *and* validation failures into a map keyed by struct
+field path (`Name`, `Address.Zip` — not the request key; translate when
+rendering). When a field fails both — e.g. `age=abc` on an `int` with a range
+rule — the binding error wins, since "not a number" is the actionable message.
+Non-field errors (an unparseable request) are omitted, so keep `err` itself
+authoritative and render the map on top.
 
 ## Lifecycle hooks
 

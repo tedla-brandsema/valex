@@ -18,23 +18,29 @@ bite an adopter):
   this — it's now covered, not just core). Fixes the test-isolation footgun and
   lets two differently-configured validators coexist in one process.
 
-- [ ] **Field-keyed multiple errors (the headline).** Today `ValidateStruct`
-  returns only the *first* failure — tagex stops at the first directive error and
-  has no accumulation. A form lib must be able to report "email is invalid AND
-  age must be ≥ 18". This is **tagex-first**: add an accumulate mode to the engine
-  (a tagex v0.5.0), then surface it field-keyed through `valex`/`forms`. Error
-  shape (typed `[]FieldError` with paths vs `errors.Join`) is still undecided —
-  pick before building.
+- [x] **Field-keyed multiple errors (the headline).** Done, tagex-first. tagex
+  v0.4.1 added `ProcessStructAll` (accumulate, returns `errors.Join` of the typed
+  per-field errors). valex surfaces it as `ValidateStructAll` (+ `Registry`
+  method) and `FieldErrors(err) map[string]error`; `forms.ValidateAll` /
+  `ValidateAllWith` accumulate binding *and* validation, and `forms.FieldErrors`
+  merges them, bind error winning on a same-field collision. Keys are struct
+  field paths (the only unambiguous key — request keys collide on nested
+  `field:"id"`). Field-level binding failures now map to 422 (input problem),
+  while a malformed `field` tag stays 400 (developer error).
 
-- [ ] **Fuzz the `forms` binding path.** `forms` is the only place untrusted
-  input enters (opposite threat model from tagex's compile-time tags). Add
-  `FuzzBind` / `FuzzSplitFormTag` over adversarial `url.Values`, asserting no
-  panic. Note the surface is narrower than it looks — binding walks the *struct*
-  shape, not the input, so hostile payloads can't drive unbounded recursion;
-  repeated keys are capped by `enforceMax`; oversized bodies are the server's job
-  (`MaxBytesReader`). Cheap insurance against type-confusion panics regardless.
+- [x] **Fuzz the `forms` binding path.** Done — `FuzzBind` over adversarial
+  `url.Values`, ~900k execs, no crashers.
 
 ## Backlog
+
+- [ ] **Request-key keying for `forms.FieldErrors` (follow-up to field-keyed errors).**
+  `FieldErrors` keys by struct field path (`Email`, `Sub.N`), not the request key
+  (`email`, `n`) a frontend posts. Request-key keying is what you'd render next to
+  inputs, but it needs a struct-path → request-key translation, and today's binder
+  uses *flat* request keys, so two nested structs each with `field:"id"` collide —
+  the keying would need hierarchical request keys in the binder first. Real work,
+  not vapor; do it when an adopter needs input-keyed errors. Until then, callers
+  map Go paths → input names themselves (documented on `FieldErrors`).
 
 - [ ] **(Deferred, on demand) Allow `=` inside `field` tag param values via `SplitN`.**
   `splitFormTag` in `forms/form.go` uses `strings.Split(pair, "=")` and requires

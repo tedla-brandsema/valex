@@ -131,6 +131,46 @@ func TestRegisterDirectiveErrors(t *testing.T) {
 	valex.MustRegisterDirective(d)
 }
 
+func TestValidateStructAllAndFieldErrors(t *testing.T) {
+	// stub registers "minlen" (size) and "intrange" (min,max) on the default registry.
+	type Person struct {
+		Name string `val:"minlen,size=5"`
+		Age  int    `val:"intrange,min=0,max=120"`
+	}
+
+	// First-fail returns only one error...
+	if err := valex.ValidateStruct(&Person{Name: "Al", Age: 200}); err == nil {
+		t.Fatal("expected failure")
+	} else if got := len(valex.FieldErrors(err)); got != 1 {
+		t.Fatalf("ValidateStruct should surface one field, got %d", got)
+	}
+
+	// ...ValidateStructAll accumulates both.
+	err := valex.ValidateStructAll(&Person{Name: "Al", Age: 200})
+	if err == nil {
+		t.Fatal("expected failure")
+	}
+	fe := valex.FieldErrors(err)
+	if len(fe) != 2 {
+		t.Fatalf("want 2 field errors, got %d: %v", len(fe), fe)
+	}
+	var pe *valex.ProcessError
+	if !errors.As(fe["Age"], &pe) || pe.FieldPath != "Age" {
+		t.Fatalf("Age should be a *ProcessError with FieldPath Age, got %v", fe["Age"])
+	}
+	if fe["Name"] == nil {
+		t.Fatalf("missing Name field error: %v", fe)
+	}
+
+	// Clean struct -> nil.
+	if err := valex.ValidateStructAll(&Person{Name: "Alice", Age: 30}); err != nil {
+		t.Fatalf("expected nil for valid struct, got %v", err)
+	}
+	if valex.FieldErrors(nil) != nil {
+		t.Fatal("FieldErrors(nil) should be nil")
+	}
+}
+
 func TestRegistryIsolation(t *testing.T) {
 	type Box struct {
 		S string `val:"valex_test_regdup"`

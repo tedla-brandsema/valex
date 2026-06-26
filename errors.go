@@ -75,3 +75,41 @@ const (
 	StagePost      = tagex.StagePost
 	StageStruct    = tagex.StageStruct
 )
+
+// FieldErrors flattens an error returned by ValidateStructAll into a map from
+// field path to the error for that field, keeping the first error seen per
+// field.
+//
+// The keys are struct field paths — the same values ProcessError.FieldPath
+// carries, e.g. "Email" or "Items[2].SKU" — not request keys or display names;
+// translate them yourself when rendering. It walks errors.Join trees, so it
+// works on the accumulated result of ValidateStructAll. A nil error yields a nil
+// map. Field-less errors (such as *InvalidTargetError) are omitted, so the
+// original error stays authoritative — check err != nil first, then render the
+// map on top.
+func FieldErrors(err error) map[string]error {
+	if err == nil {
+		return nil
+	}
+	m := make(map[string]error)
+	collectFieldErrors(err, m)
+	if len(m) == 0 {
+		return nil
+	}
+	return m
+}
+
+func collectFieldErrors(err error, m map[string]error) {
+	if j, ok := err.(interface{ Unwrap() []error }); ok {
+		for _, e := range j.Unwrap() {
+			collectFieldErrors(e, m)
+		}
+		return
+	}
+	var pe *ProcessError
+	if errors.As(err, &pe) && pe.FieldPath != "" {
+		if _, exists := m[pe.FieldPath]; !exists {
+			m[pe.FieldPath] = err
+		}
+	}
+}

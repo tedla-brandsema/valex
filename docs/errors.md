@@ -81,6 +81,27 @@ if errors.As(err, &he) {
 return internalError(err)   // wrong field type / unsettable field: fix the code
 ```
 
+## Collecting every field error
+
+`ValidateStruct` stops at the first failure. To gather *all* of them — to show
+every invalid field at once — use `ValidateStructAll`, which returns an
+`errors.Join` of the per-field errors (still typed, still reachable with
+`errors.As`), and `FieldErrors` to turn that into a map:
+
+```go
+if err := valex.ValidateStructAll(&user); err != nil {
+	for field, fe := range valex.FieldErrors(err) {
+		log.Printf("%s: %v", field, fe)
+	}
+}
+```
+
+The map keys are struct field paths — the same `ProcessError.FieldPath` values
+(`Email`, `Items[2].SKU`), not display names. Field-less errors (such as
+`*InvalidTargetError`) are omitted, so `err != nil` stays authoritative.
+`valex/forms` builds on this to also fold in binding errors — see
+[forms.md](forms.md#every-error-at-once).
+
 ## Forms
 
 `valex/forms` wraps validation and binding failures in `*forms.Error`, which adds

@@ -32,6 +32,22 @@ thereafter require a major bump.
   `forms.Validate` are unchanged and use the default registry.
 - Fuzz coverage for the `forms` binding path (`FuzzBind`), the only place
   untrusted input enters the library.
+- `ValidateStructAll` (package function and `Registry` method) and
+  `FieldErrors(err) map[string]error` — collect *every* field failure instead of
+  stopping at the first, keyed by struct field path. Built on tagex v0.4.1's
+  `ProcessStructAll`.
+- `forms.ValidateAll` / `forms.ValidateAllWith` and `forms.FieldErrors` —
+  accumulate binding *and* validation failures across all fields and merge them
+  into one field-keyed map. When a field fails both (e.g. a non-numeric value for
+  an int with a range rule), the binding error wins.
+
+### Changed
+- A field-level binding failure (a value that can't convert to the field's type,
+  too many values, a missing required field) now maps to HTTP **422**, not 400;
+  400 is reserved for a request that can't be parsed at all (and for a malformed
+  `field` tag, which is a developer error). Previously a type error's status
+  flipped depending on whether another field also failed.
+- Requires tagex **v0.4.1** (was v0.4.0) for `ProcessStructAll`.
 
 ## [0.1.0] - 2026-06-26
 

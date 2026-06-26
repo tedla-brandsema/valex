@@ -30,6 +30,14 @@ func (r *Registry) ValidateStruct(data any, tags ...*tagex.Tag) error {
 	return tagex.ProcessStruct(data, append(tags, r.tag)...)
 }
 
+// ValidateStructAll is like ValidateStruct but does not stop at the first
+// failure: it validates every field and returns errors.Join of the per-field
+// errors (nil when all pass). Use FieldErrors to turn the result into a map
+// keyed by field path.
+func (r *Registry) ValidateStructAll(data any, tags ...*tagex.Tag) error {
+	return tagex.ProcessStructAll(data, append(tags, r.tag)...)
+}
+
 // RegisterDirectiveTo registers a directive on r. It is a free function rather
 // than a method because Go methods cannot have type parameters. It returns
 // *EmptyDirectiveNameError if the directive's Name is blank, or
@@ -50,6 +58,14 @@ func MustRegisterDirectiveTo[T any](r *Registry, d tagex.Directive[T]) {
 // values can be provided to process more tags in the same pass.
 func ValidateStruct(data any, tags ...*tagex.Tag) error {
 	return defaultRegistry.ValidateStruct(data, tags...)
+}
+
+// ValidateStructAll is like ValidateStruct but does not stop at the first
+// failure: it validates every field against the default registry and returns
+// errors.Join of the per-field errors (nil when all pass). Use FieldErrors to
+// turn the result into a map keyed by field path.
+func ValidateStructAll(data any, tags ...*tagex.Tag) error {
+	return defaultRegistry.ValidateStructAll(data, tags...)
 }
 
 // RegisterDirective registers a directive on the default registry for use with
