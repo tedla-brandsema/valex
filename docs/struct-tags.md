@@ -173,16 +173,22 @@ of goroutines. Registering while other goroutines validate is safe but unusual.
 
 ## One global registry
 
-All `val` directives live in a single, process-wide registry — the one behind
-`RegisterDirective`, `MustRegisterDirective`, and `ValidateStruct`. That is
-convenient for an application: register once at startup, validate anywhere. And
-because registration fails loudly on a name collision (`*DuplicateDirectiveError`),
-two independent registrations of the same name can't silently shadow each other.
+The `val` directives live in a single, process-wide registry — the one behind
+`RegisterDirective`, `MustRegisterDirective`, and `ValidateStruct`. Think of it
+the way you think of `flag.CommandLine` or `http.DefaultServeMux`: **it belongs to
+the application**, not to any one library.
 
-If you need an **isolated** set of directives — say a library that shouldn't
-share, or collide with, the importing program's registry — build your own tagex
-tag and validate against it directly. The catalog validators are plain
-`tagex.Directive` values, so they register on any tag:
+**If you are writing an application**, this is all you need. Register your
+directives once at startup with `MustRegisterDirective` and validate anywhere.
+Registration fails loudly on a duplicate name (`*DuplicateDirectiveError`), so a
+double-registration is caught at boot instead of silently shadowing.
+
+**If you are writing a library** that validates internally, **do not register on
+the global registry.** It is shared with the importing program and every other
+library in the binary, so if two of them register the same directive name — say
+two libraries that both `MustRegisterDirective(&validators.EmailValidator{})` —
+the second one panics at startup. Bring your own registry instead: the catalog
+validators are plain `tagex.Directive` values, so they register on any tag.
 
 ```go
 reg := tagex.NewTag("val")
@@ -191,7 +197,7 @@ tagex.MustRegisterDirective(reg, &validators.EmailValidator{})
 err := tagex.ProcessStruct(&user, reg) // isolated; the global registry is untouched
 ```
 
-Use `tagex.ProcessStruct(&data, reg)`, **not** `valex.ValidateStruct(&data, reg)`:
+Validate with `tagex.ProcessStruct(&data, reg)`, **not** `valex.ValidateStruct(&data, reg)`:
 `ValidateStruct` always *also* applies the global `val` registry, and since both
 tags share the key `val`, every field would be processed by both — and the global
 pass would fail on any directive only `reg` knows. The extra-tags parameter of

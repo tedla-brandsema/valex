@@ -28,9 +28,15 @@
 //
 // # Registry
 //
-// The "val" directives live in a single, process-global registry. For an
-// isolated set (for example a library that should not share the importing
-// program's registry), create your own tag with tagex.NewTag("val"), register
-// directives on it, and validate with tagex.ProcessStruct — not ValidateStruct,
-// which always also applies the global registry.
+// The "val" directives live in a single, process-global registry — like
+// flag.CommandLine or http.DefaultServeMux, it belongs to the application.
+// Applications register once at startup with MustRegisterDirective and validate
+// anywhere.
+//
+// Libraries should NOT register on the global registry: it is shared with the
+// importing program and every other library, so two of them registering the same
+// directive name panic at startup under MustRegisterDirective. A library that
+// validates internally should create its own tag with tagex.NewTag("val"),
+// register directives on it, and validate with tagex.ProcessStruct (not
+// ValidateStruct, which always also applies the global registry).
 package valex
