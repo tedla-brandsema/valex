@@ -49,6 +49,12 @@ fmt.Println(v.Get()) // 42
 `Set` returns `ErrNoValidator` if no `Validator` is configured. `Get` returns the
 stored value and `String` formats it with `%v`.
 
+`ValidatedValue` is an **in-memory guard**, not a serialization type. The stored
+value is unexported and a decoder has no way to supply the `Validator`, so it
+does not round-trip through `encoding/json`. For JSON, request, or other
+serialized input, unmarshal into plain fields and validate with
+[`ValidateStruct`](struct-tags.md) instead.
+
 ## MustValidate
 
 `MustValidate` validates and returns the value, or **panics** if it fails. Use it

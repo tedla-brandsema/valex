@@ -170,3 +170,30 @@ err := valex.ValidateStruct(&data, otherTag)
 `RegisterDirective` and `ValidateStruct` are safe for concurrent use. Register
 directives once at startup (typically in `init`), then validate from any number
 of goroutines. Registering while other goroutines validate is safe but unusual.
+
+## One global registry
+
+All `val` directives live in a single, process-wide registry — the one behind
+`RegisterDirective`, `MustRegisterDirective`, and `ValidateStruct`. That is
+convenient for an application: register once at startup, validate anywhere. And
+because registration fails loudly on a name collision (`*DuplicateDirectiveError`),
+two independent registrations of the same name can't silently shadow each other.
+
+If you need an **isolated** set of directives — say a library that shouldn't
+share, or collide with, the importing program's registry — build your own tagex
+tag and validate against it directly. The catalog validators are plain
+`tagex.Directive` values, so they register on any tag:
+
+```go
+reg := tagex.NewTag("val")
+tagex.MustRegisterDirective(reg, &validators.EmailValidator{})
+
+err := tagex.ProcessStruct(&user, reg) // isolated; the global registry is untouched
+```
+
+Use `tagex.ProcessStruct(&data, reg)`, **not** `valex.ValidateStruct(&data, reg)`:
+`ValidateStruct` always *also* applies the global `val` registry, and since both
+tags share the key `val`, every field would be processed by both — and the global
+pass would fail on any directive only `reg` knows. The extra-tags parameter of
+`ValidateStruct` (see [Multiple tags in one pass](#multiple-tags-in-one-pass)) is
+for tags with a *different* key, not for same-key isolation.

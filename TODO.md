@@ -46,3 +46,23 @@ _(nothing in flight)_
   `valex/forms` is the only package that imports `net/http`. Programs that
   validate in code or by tag never pull it in. Folding forms into the core would
   force that dependency on everyone for a feature many won't use. Not changing.
+
+- **No rename of `forms.Validator` to avoid the `valex.Validator` name overlap.**
+  `valex.Validator[T]` (the interface) and `forms.Validator` (the request
+  binder) share a name but live in different packages, so the import path
+  disambiguates them — exactly like `text/template.Template` vs
+  `html/template.Template`. Go treats the package name as part of the identifier.
+  The in-package pair `forms.Validate` (one-shot func) and `(*Validator).Validate`
+  (method) is the same idiom as `http.ListenAndServe`. A rename would churn the
+  API for no clarity gain. Not changing.
+
+- **No global-registry instance API (yet); a `valex.NewRegistry` is deferred.**
+  All `val` directives share one process-global registry. An instance type for
+  isolation is awkward in Go (registration is generic in the field type, and
+  methods can't be generic, so it would need free functions like
+  `RegisterDirectiveTo(reg, d)`), and `forms` would also need to accept a
+  registry to be useful. Adding it later is purely additive — new identifiers,
+  no change to the existing API — so it stays out until a real embedder needs
+  isolation. The escape hatch documented in `docs/struct-tags.md` (build a
+  `tagex.NewTag("val")` and use `tagex.ProcessStruct`) covers that case today
+  with no valex change.

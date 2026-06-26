@@ -25,4 +25,12 @@
 // it. The intended pattern is to register directives once at startup (typically
 // in an init function) and validate from many goroutines thereafter. Registering
 // while other goroutines validate is safe but unusual.
+//
+// # Registry
+//
+// The "val" directives live in a single, process-global registry. For an
+// isolated set (for example a library that should not share the importing
+// program's registry), create your own tag with tagex.NewTag("val"), register
+// directives on it, and validate with tagex.ProcessStruct — not ValidateStruct,
+// which always also applies the global registry.
 package valex

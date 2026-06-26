@@ -18,7 +18,11 @@ func (p ValidatorFunc[T]) Validate(val T) error {
 	return p(val)
 }
 
-// ValidatedValue stores a value and validates updates with the provided Validator.
+// ValidatedValue stores a value and validates updates with the provided
+// Validator. It is an in-memory guard, not a serialization type: the stored
+// value is unexported and a decoder has no way to supply the Validator, so it
+// does not round-trip through encoding/json. For serialized or request input,
+// validate with ValidateStruct (the "val" tag) instead.
 type ValidatedValue[T any] struct {
 	value     T
 	Validator Validator[T]
