@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/tedla-brandsema/tagex"
 	"github.com/tedla-brandsema/valex"
 	_ "github.com/tedla-brandsema/valex/internal/stub" // registers stub directives
 )
@@ -95,4 +96,37 @@ func TestMustValidate(t *testing.T) {
 		}
 	}()
 	valex.MustValidate(-1, positive)
+}
+
+// regDupDirective is a uniquely-named throwaway directive for the registration
+// error-path test. Its name is not used by any other test or example.
+type regDupDirective struct{}
+
+func (*regDupDirective) Name() string              { return "valex_test_regdup" }
+func (*regDupDirective) Mode() tagex.DirectiveMode { return tagex.EvalMode }
+func (*regDupDirective) Handle(s string) (string, error) {
+	return s, nil
+}
+
+func TestRegisterDirectiveErrors(t *testing.T) {
+	d := &regDupDirective{}
+
+	if err := valex.RegisterDirective(d); err != nil {
+		t.Fatalf("first RegisterDirective: %v", err)
+	}
+
+	// A second registration of the same name returns *DuplicateDirectiveError,
+	// re-exported from tagex so callers need not import it.
+	var dup *valex.DuplicateDirectiveError
+	if err := valex.RegisterDirective(d); !errors.As(err, &dup) {
+		t.Fatalf("want *DuplicateDirectiveError, got %v", err)
+	}
+
+	// MustRegisterDirective panics on that same duplicate.
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected panic on duplicate MustRegisterDirective")
+		}
+	}()
+	valex.MustRegisterDirective(d)
 }

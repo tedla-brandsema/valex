@@ -33,8 +33,19 @@ type (
 	// HookError wraps an error returned by a pre- or post-processing hook.
 	HookError = tagex.HookError
 
+	// InvalidTargetError is returned when ValidateStruct gets a value that is not a pointer to a struct.
+	InvalidTargetError = tagex.InvalidTargetError
+	// NilTagError is returned when a nil tag is processed.
+	NilTagError = tagex.NilTagError
+	// MaxDepthError is returned when processing recurses past the nesting limit (usually cyclic data).
+	MaxDepthError = tagex.MaxDepthError
+
 	// UnknownDirectiveError is returned when a tag names an unregistered directive.
 	UnknownDirectiveError = tagex.UnknownDirectiveError
+	// EmptyDirectiveNameError is returned by RegisterDirective for a directive with a blank Name.
+	EmptyDirectiveNameError = tagex.EmptyDirectiveNameError
+	// DuplicateDirectiveError is returned by RegisterDirective when the directive name is already registered.
+	DuplicateDirectiveError = tagex.DuplicateDirectiveError
 	// DirectiveParseError is returned when a tag value omits the directive name.
 	DirectiveParseError = tagex.DirectiveParseError
 	// ParamParseError is returned for a malformed "key=value" parameter pair.
@@ -57,8 +68,10 @@ type (
 
 // Processing stages, re-exported from tagex for use with Stage and ProcessError.
 const (
+	StageInput     = tagex.StageInput
 	StagePre       = tagex.StagePre
 	StageDirective = tagex.StageDirective
 	StageParam     = tagex.StageParam
 	StagePost      = tagex.StagePost
+	StageStruct    = tagex.StageStruct
 )
