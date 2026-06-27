@@ -48,8 +48,11 @@ bite an adopter):
   string, base64 padding, `default=a=b` all fail). The fix is one word —
   `strings.SplitN(pair, "=", 2)` — and is backward-compatible: every currently-
   valid tag parses identically, only previously-rejected `2+ =` input becomes
-  accepted. Mirrors the same deferred relaxation in tagex's `kv`. No third-party
-  users demand it yet, and it slightly weakens loud-fail typo detection, so it
+  accepted. tagex shipped the matching relaxation in v0.5.0 — its `kv` now splits
+  on the first `=`, and single-quoted values embed `=`/`,`/`;` literally — so the
+  `val` tag already accepts `=` in a value; `forms`' own `splitFormTag` is the
+  lone holdout now, which sharpens the asymmetry. Still deferred: no third-party
+  user demands it yet, and it slightly weakens loud-fail typo detection, so it
   waits until a real adopter needs it.
 
 - [ ] **Bind into slices and maps of structs in `forms`.**
