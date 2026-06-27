@@ -30,6 +30,64 @@ val:"<directive>,<arg>=<value>,<arg>=<value>"
 Where a directive takes a list, the values are pipe-separated:
 `val:"oneof,values=draft|sent|paid"`.
 
+## Chaining directives
+
+Apply several directives to one field by separating them with `;`. They run
+**left to right**, and each `MutMode` directive's written-back value is what the
+next one sees:
+
+```go
+type Login struct {
+	User string `val:"alphanum;min,size=3"`
+}
+```
+
+`alphanum` and `min` are both checks, so order here only decides which failure
+surfaces first. Order becomes significant once a `MutMode` (normalizing)
+directive is in the chain: a custom `trim;min,size=3` validates the *trimmed*
+length, while `min,size=3;trim` validates the raw one. The
+[chained example](../examples/chained/) is a runnable `trim;lower;max` pipeline.
+
+A chain **stops at the first failing segment** and reports that one error; later
+segments do not run. Each segment gets its own per-call copy of the directive, so
+chained directives never share parameter state. Stray separators are ignored, so
+a leading, doubled, or trailing `;` (`;min,size=3;;`) is harmless.
+
+Two things to know:
+
+- **Reserved characters.** `,` separates parameters and `;` chains directives. To
+  use either literally in a parameter value — or `=`, or significant
+  leading/trailing whitespace — quote the value (see below).
+- **Partial mutation under `ValidateStructAll`.** Because a chain stops mid-way on
+  failure, a `MutMode` segment that already ran has still written to the field.
+  `ValidateStructAll` records the error and continues to the other fields, leaving
+  that field partially transformed. If you need all-or-nothing field mutation,
+  validate before you mutate (`min,size=3;trim`, not `trim;min,size=3`).
+
+## Quoting parameter values
+
+A parameter value is delimited by the reserved characters around it: only the
+first `=` in a pair splits key from value (so `pattern=a=b` gives value `a=b`),
+but a `,` ends the parameter and a `;` ends the directive. To put `,`, `;`, `=`,
+or significant leading/trailing whitespace **inside** a value, wrap it in single
+quotes:
+
+```go
+type Rule struct {
+	Code string `val:"regex,pattern='[a-z]{1,3}'"` // value is [a-z]{1,3}, comma and all
+}
+```
+
+Single quotes are used because the tag value is already delimited by double
+quotes (`val:"..."`). Inside the quotes `,`, `;`, and `=` are literal; double an
+interior quote (`''`) for a literal `'`, and a quoted empty value (`sep=''`) is an
+explicit empty string.
+
+A literal backslash must be **doubled** in the struct tag itself
+(`pattern='^\\d{1,3}$'`) — Go unquotes the tag value before valex sees it, so a
+lone `\d` is rejected by `go vet` as a bad tag. This is Go's struct-tag rule, not
+valex's.
+
 ## Registering directives
 
 The engine ships **no** directives. Register the ones you use — once, at startup:

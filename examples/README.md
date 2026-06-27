@@ -11,6 +11,7 @@ go run ./examples/<name>
 | [programmatic](programmatic/) | Validate values in code with `ValidatorFunc` and `ValidatedValue` — no tags. |
 | [validate-struct](validate-struct/) | Register catalog directives and validate a struct with the `val` tag. |
 | [custom-directive](custom-directive/) | Extend the `val` tag with your own directive via `RegisterDirective`. |
+| [chained](chained/) | Apply several directives to one field with `;` — `trim;lower;max`, run left to right. |
 | [forms](forms/) | Bind and validate an `net/http` request with `valex/forms`. |
 
 For API reference and concept guides, see [docs/](../docs/index.md). Go testable

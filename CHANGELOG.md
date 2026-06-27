@@ -20,6 +20,29 @@ thereafter require a major bump.
 
 ## [Unreleased]
 
+### Added
+- Directive chaining for the `val` tag: apply several directives to one field by
+  separating them with `;` (`val:"alphanum;min,size=3"`). Segments run
+  left-to-right, each `MutMode` result feeding the next, and processing stops at
+  the first failing segment. Under `ValidateStructAll` a chain that fails mid-way
+  leaves earlier `MutMode` segments already written. See the new
+  `examples/chained` program and [docs/struct-tags.md](docs/struct-tags.md).
+- Single-quoted parameter values, so `,`, `;`, `=`, and significant
+  leading/trailing whitespace can appear literally inside a value
+  (`val:"regex,pattern='[a-z]{1,3}'"`). Double an interior quote (`''`) for a
+  literal `'`; a quoted empty value (`size=''`) is an explicit empty string. (A
+  literal backslash is doubled in the tag, e.g. `'^\\d{1,3}$'`, per Go's
+  struct-tag unquoting.)
+
+### Changed
+- Requires tagex **v0.5.0** (was v0.4.1), which adds the chaining and quoting
+  above. **Breaking (inherited from tagex):** surrounding single quotes in a
+  parameter value are now syntax, not data — a value previously read with its
+  quotes (`pattern='hi'` → `'hi'`) is now unquoted (`→ hi`). Drop quotes you meant
+  literally, or double them (`''`) to keep one. Values with no single quotes are
+  unaffected, and no `valex/validators` catalog directive used quoting, so the
+  built-ins behave identically.
+
 ## [0.2.0] - 2026-06-27
 
 ### Added
