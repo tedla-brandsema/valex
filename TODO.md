@@ -56,17 +56,38 @@ bite an adopter):
   waits until a real adopter needs it.
 
 - [ ] **Bind into slices and maps of structs in `forms`.**
-  This is a *binding* gap, not a validation one — `forms` does its own reflection
-  in `bindStructFields` (forms/form.go) to copy request values into the struct
-  before tagex runs; tagex never sees the request. That recursion handles nested
-  structs and non-nil pointers-to-struct, but not slices or maps *of* structs
-  (the `reflect.Slice` case only binds slices of scalars like `[]string`). So a
-  `[]Address` field is never populated from the request. tagex v0.4.0 closed the
-  matching gap on its side (its validation walk now descends into collections),
-  which makes the asymmetry sharper: such a field gets validated but never bound.
-  Either extend binding to cover repeated nested groups or document the boundary
-  explicitly. Deferred until a real form needs repeated nested groups; flat and
-  singly-nested forms (the common case) are unaffected.
+  A *binding* gap, not a validation one — `forms` does its own reflection in
+  `bindStructFields` (forms/form.go) to copy request values into the struct before
+  tagex runs; tagex never sees the request. That recursion handles nested structs
+  and non-nil pointers-to-struct, but not slices or maps *of* structs (the
+  `reflect.Slice` case only binds slices of scalars like `[]string`). So a
+  `[]Address` field is *validated* — tagex's walk descends into collections — but
+  never *populated*. That asymmetry is the bug.
+
+  **Why we can't copy tagex.** tagex's collection support is a validation walk over
+  an *already-built* value (`val.Index(i)` / `val.MapIndex`); `forms` has the
+  inverse job — *construct* the collection from the wire. The recursion shape
+  transfers; the hard part — turning flat request data into nested elements — does
+  not. Different problem, not a shortcut we skipped.
+
+  **Root cause is stdlib.** `url.Values` is `map[string][]string`, and
+  `ParseForm`/`ParseQuery` do zero nesting: `lines[0].sku` is one opaque flat key
+  (Go has no `a[b][c]` convention — that's PHP/Rails). Only repeated-key scalar
+  slices work today. `encoding/json`, by contrast, is hierarchical natively.
+
+  **Two routes when this is picked up:**
+  - *Stay on `url.Values`* — invent/adopt a flat-key convention (`a[0][b]`), parse
+    it ourselves, plus string coercion and a sparse-index/DoS bound (cap via the
+    `field` tag's `max`). Stdlib gives nothing here.
+  - *JSON-body source* — `json.Unmarshal` → `map[string]any` (hierarchy for free),
+    then bind through the existing `field`/`val` tags by path. The library's model
+    stays intact; only the binder's *source* changes (`map[string]any` instead of
+    `map[string][]string`, path resolution instead of a flat lookup). Note this is
+    a new content type, not a swap — urlencoded stays the flat case.
+
+  Worth doing — a go-to form-validation lib will be asked for nested/repeated
+  groups — but it needs deliberate design, not a hasty convention. Deferred; flat
+  and singly-nested forms (the common case) are unaffected.
 
 ## Decided / Won't do
 
