@@ -20,6 +20,8 @@ thereafter require a major bump.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-27
+
 ### Added
 - Directive chaining for the `val` tag: apply several directives to one field by
   separating them with `;` (`val:"alphanum;min,size=3"`). Segments run
@@ -105,6 +107,7 @@ Initial release.
   shared `val` registry safe.
 - Requires Go 1.22 or later.
 
-[Unreleased]: https://github.com/tedla-brandsema/valex/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/tedla-brandsema/valex/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/tedla-brandsema/valex/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/tedla-brandsema/valex/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/tedla-brandsema/valex/releases/tag/v0.1.0
